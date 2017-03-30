@@ -70,7 +70,8 @@ public class SingleStatsTest extends MultipleCacheManagersTest {
       }
 
       refreshStats();
-      assertEquals(EVICTION_MAX_ENTRIES, stats.getCurrentNumberOfEntries());
+      assertEquals(TOTAL_ENTRIES, stats.getCurrentNumberOfEntries());
+      assertEquals(EVICTION_MAX_ENTRIES, stats.getCurrentNumberOfEntriesInMemory());
       assertEquals(TOTAL_ENTRIES - EVICTION_MAX_ENTRIES, stats.getEvictions());
 
       cache.evict("key0");
