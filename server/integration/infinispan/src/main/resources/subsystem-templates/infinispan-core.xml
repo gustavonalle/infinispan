@@ -132,7 +132,7 @@
                     <file-store passivation="false" path="mc" purge="true" shared="false"/>
                 </local-cache>
                 <local-cache name="namedCache">
-                    <expiration lifespan="2000" max-idle="1000"/>
+                    <expiration lifespan="2000"/>
                     <file-store passivation="false" path="nc" purge="true" shared="false">
                         <write-behind modification-queue-size="1024" thread-pool-size="1"/>
                     </file-store>

@@ -3,9 +3,6 @@ package org.infinispan.server.test.cs.remote;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
 import org.infinispan.arquillian.core.RunningServer;
@@ -79,25 +76,15 @@ public class RemoteCacheStoreIT {
                 .getHotrodEndpoint().getPort()).build();
         rcm1 = new RemoteCacheManager(conf);
         RemoteCache<String, String> rc1 = rcm1.getCache(READONLY_CACHE_NAME);
-        // put 3 keys, one entry is evicted, but not stored
-        Set<String> allKeys = new HashSet<>();
-        for (int i = 1; i < 4; i++) {
-            String key = "k"+i;
-            rc1.put(key, "v"+i);
-            allKeys.add(key);
-        }
-        assertEquals(0, server2.getCacheManager(LOCAL_CACHE_MANAGER).getDefaultCache().getNumberOfEntries());
-        assertEquals(2, server1.getCacheManager(LOCAL_CACHE_MANAGER).getCache(READONLY_CACHE_NAME).getNumberOfEntries());
-
-        Set<String> storedKeys = rc1.keySet();
-        allKeys.removeAll(storedKeys);
-        for (String key : allKeys)
-            assertNull(rc1.get(key));
-
-        for (String key : storedKeys) {
-            int i = Integer.parseInt(key.substring(1));
-            assertEquals("v"+i, rc1.get(key));
-        }
+        // put 3 keys, k1 is evicted, but not stored
+        rc1.put("k1", "v1");
+        rc1.put("k2", "v2");
+        rc1.put("k3", "v3");
+        assertEquals(0, server2.getCacheManager(LOCAL_CACHE_MANAGER).getDefaultCache().getNumberOfEntriesInMemory());
+        assertEquals(2, server1.getCacheManager(LOCAL_CACHE_MANAGER).getCache(READONLY_CACHE_NAME).getNumberOfEntriesInMemory());
+        assertNull(rc1.get("k1"));
+        assertEquals("v2", rc1.get("k2"));
+        assertEquals("v3", rc1.get("k3"));
     }
 
     /*
@@ -119,8 +106,8 @@ public class RemoteCacheStoreIT {
         assertEquals(0, server2.getCacheManager(LOCAL_CACHE_MANAGER).getDefaultCache().getNumberOfEntries());
         mc.set("k3", "v3");
         // now k1 evicted and stored in store
-        assertEquals(2, server1.getCacheManager(LOCAL_CACHE_MANAGER).getCache(LOCAL_CACHE_NAME).getNumberOfEntries());
-        assertEquals(1, server2.getCacheManager(LOCAL_CACHE_MANAGER).getDefaultCache().getNumberOfEntries());
+        assertEquals(2, server1.getCacheManager(LOCAL_CACHE_MANAGER).getCache(LOCAL_CACHE_NAME).getNumberOfEntriesInMemory());
+        assertEquals(1, server2.getCacheManager(LOCAL_CACHE_MANAGER).getDefaultCache().getNumberOfEntriesInMemory());
         // retrieve from store to cache and remove from store, another key must be evicted (k2)
         assertEquals("v1", mc.get("k1"));
         assertEquals("v2", mc.get("k2"));
