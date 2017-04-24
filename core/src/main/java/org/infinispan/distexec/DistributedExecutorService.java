@@ -45,7 +45,9 @@ import org.infinispan.remoting.transport.Address;
  * @author Vladimir Blagojevic
  *
  * @since 5.0
+ * @deprecated since JDG 7.2 Please use {@link org.infinispan.manager.ClusterExecutor} or {@link org.infinispan.CacheStream} instead.
  */
+@Deprecated
 public interface DistributedExecutorService extends ExecutorService {
 
    /**

@@ -50,6 +50,7 @@ import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.responses.SuccessfulResponse;
 import org.infinispan.remoting.rpc.ResponseMode;
@@ -79,8 +80,9 @@ import org.infinispan.util.logging.LogFactory;
  *
  * @author Vladimir Blagojevic
  * @since 5.0
- *
+ * @deprecated since JDG 7.2 Please use {@link EmbeddedCacheManager#executor()} or {@link org.infinispan.CacheStream} instead.
  */
+@Deprecated
 public class DefaultExecutorService extends AbstractExecutorService implements DistributedExecutorService {
 
    private static final NodeFilter SAME_MACHINE_FILTER = TopologyAwareAddress::isSameMachine;
