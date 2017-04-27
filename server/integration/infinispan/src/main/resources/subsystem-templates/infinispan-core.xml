@@ -183,7 +183,7 @@
                     </leveldb-store>
                 </local-cache>
                 <local-cache name="namedCache">
-                    <expiration lifespan="2000" max-idle="1000"/>
+                    <expiration lifespan="2000"/>
                     <leveldb-store path="leveldb-nc" block-size="1024" cache-size="50000" clear-threshold="100000">
                         <expiration path="leveldb-nc-expired" queue-size="2000"/>
                         <compression type="SNAPPY"/>
@@ -303,7 +303,7 @@
                     </remote-store>
                 </local-cache>
                 <local-cache name="namedCache">
-                    <expiration lifespan="2000" max-idle="1000"/>
+                    <expiration lifespan="3000"/>
                     <remote-store cache="namedCache" socket-timeout="60000" tcp-no-delay="true" passivation="false">
                         <remote-server outbound-socket-binding="remote-store-hotrod-server"/>
                     </remote-store>

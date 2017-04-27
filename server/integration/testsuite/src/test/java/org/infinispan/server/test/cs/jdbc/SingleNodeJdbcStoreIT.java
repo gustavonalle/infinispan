@@ -3,7 +3,6 @@ package org.infinispan.server.test.cs.jdbc;
 import static org.infinispan.server.test.util.ITestUtils.createMBeans;
 import static org.infinispan.server.test.util.ITestUtils.createMemcachedClient;
 import static org.infinispan.server.test.util.ITestUtils.eventually;
-import static org.infinispan.server.test.util.ITestUtils.getRealKeyFromStored;
 import static org.infinispan.server.test.util.ITestUtils.getRealKeyStored;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +14,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.arquillian.core.InfinispanResource;
@@ -28,8 +26,6 @@ import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
-import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.persistence.support.Bucket;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.client.memcached.MemcachedClient;
 import org.infinispan.server.test.util.ITestUtils;
@@ -280,7 +276,7 @@ public class SingleNodeJdbcStoreIT {
         binaryCache.put(key2, "v2");
         assertTrue(!binaryDB.bucketTable.exists() || binaryDB.bucketTable.getAllRows().isEmpty());
         binaryCache.put(key3, "v3");
-        assertTrue(2 >= server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
+        assertTrue(2 >= server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntriesInMemory());
         assertTrue(!binaryDB.bucketTable.getAllRows().isEmpty());
         
         assertEquals("v1", binaryCache.get(key1));
@@ -292,7 +288,7 @@ public class SingleNodeJdbcStoreIT {
         String key1 = "key1";
         String key2 = "anotherExtraUniqueKey";
         String key3 = "key3";
-        assertEquals(0, server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntries());
+        assertEquals(0, server.getCacheManager(binaryMBeans.managerName).getCache(binaryMBeans.cacheName).getNumberOfEntriesInMemory());
         if (killed) {
             assertEquals(1, binaryDB.bucketTable.getAllRows().size());
 
@@ -320,13 +316,13 @@ public class SingleNodeJdbcStoreIT {
         assertTrue(!mixedDB.bucketTable.exists() || mixedDB.bucketTable.getAllRows().isEmpty());
         //now k1 evicted and stored in store
         mixedCache.put("k3", "v3");
-        assertEquals(2, server.getCacheManager(mixedMBeans.managerName).getCache(mixedMBeans.cacheName).getNumberOfEntries());
+        assertEquals(2, server.getCacheManager(mixedMBeans.managerName).getCache(mixedMBeans.cacheName).getNumberOfEntriesInMemory());
         assertEquals(1, mixedDB.stringTable.getAllRows().size());
         assertTrue(!mixedDB.bucketTable.exists() || mixedDB.bucketTable.getAllRows().isEmpty());
     }
 
     public void testRestartMixedStoreAfter(boolean killed) throws Exception {
-        assertEquals(0, server.getCacheManager(mixedMBeans.managerName).getCache(mixedMBeans.cacheName).getNumberOfEntries());
+        assertEquals(0, server.getCacheManager(mixedMBeans.managerName).getCache(mixedMBeans.cacheName).getNumberOfEntriesInMemory());
         assertTrue(mixedDB.bucketTable.getAllRows().isEmpty());
         if (killed) {
             Set<String> allKeys = new HashSet<>(Arrays.asList("k1", "k2", "k3"));
