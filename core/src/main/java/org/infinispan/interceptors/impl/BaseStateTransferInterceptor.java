@@ -13,6 +13,7 @@ import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.TopologyAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.functional.ReadOnlyKeyCommand;
+import org.infinispan.commands.functional.ReadOnlyManyCommand;
 import org.infinispan.commands.read.GetAllCommand;
 import org.infinispan.commands.read.GetCacheEntryCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
@@ -254,6 +255,16 @@ public abstract class BaseStateTransferInterceptor extends DDAsyncInterceptor {
 
    protected boolean isLocalOnly(FlagAffectedCommand command) {
       return command.hasAnyFlag(FlagBitSets.CACHE_MODE_LOCAL);
+   }
+
+   @Override
+   public Object visitReadOnlyKeyCommand(InvocationContext ctx, ReadOnlyKeyCommand command) throws Throwable {
+      return handleReadCommand(ctx, command);
+   }
+
+   @Override
+   public Object visitReadOnlyManyCommand(InvocationContext ctx, ReadOnlyManyCommand command) throws Throwable {
+      return handleReadCommand(ctx, command);
    }
 
    protected abstract Log getLog();
