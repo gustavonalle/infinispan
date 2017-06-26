@@ -435,9 +435,13 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       InvocationContext ctx = invocationContextFactory.createInvocationContext(false, keys.size());
       GetAllCommand command = commandsFactory.buildGetAllCommand(keys, explicitFlags, false);
       Map<K, V> map = (Map<K, V>) invoker.invoke(ctx, command);
-      Iterator<Map.Entry<K, V>> entryIterator = map.entrySet().iterator();
+      return dropNullEntries(map);
+   }
+
+   private Map<K, V> dropNullEntries(Map<K, V> map) {
+      Iterator<Entry<K, V>> entryIterator = map.entrySet().iterator();
       while (entryIterator.hasNext()) {
-         Map.Entry<K, V> entry = entryIterator.next();
+         Entry<K, V> entry = entryIterator.next();
          if (entry.getValue() == null) {
             entryIterator.remove();
          }
@@ -1254,6 +1258,10 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    final void putAll(Map<? extends K, ? extends V> map, Metadata metadata, long explicitFlags) {
+      // Vanilla PutMapCommand returns previous values; add IGNORE_RETURN_VALUES as the API will drop the return value.
+      // Interceptors are free to clear this flag if appropriate (since interceptors are the only consumers of the
+      // return value).
+      explicitFlags = EnumUtil.mergeBitSets(explicitFlags, FlagBitSets.IGNORE_RETURN_VALUES);
       InvocationContext ctx = getInvocationContextWithImplicitTransaction(false, map.size());
       putAllInternal(map, metadata, explicitFlags, ctx);
    }
@@ -1261,10 +1269,6 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    private void putAllInternal(Map<? extends K, ? extends V> map, Metadata metadata, long explicitFlags, InvocationContext ctx) {
       InfinispanCollections.assertNotNullEntries(map, "map");
       Metadata merged = applyDefaultMetadata(metadata);
-      // Vanilla PutMapCommand returns previous values; add IGNORE_RETURN_VALUES as the API will drop the return value
-      // interceptors are free to clear this flag if appropriate (since interceptors are the only consumers of the
-      // return value)
-      explicitFlags = EnumUtil.mergeBitSets(explicitFlags, FlagBitSets.IGNORE_RETURN_VALUES);
       PutMapCommand command = commandsFactory.buildPutMapCommand(map, merged, explicitFlags);
       ctx.setLockOwner(command.getKeyLockOwner());
       executeCommandAndCommitIfNeeded(ctx, command);
@@ -1375,7 +1379,8 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
          } catch (InvalidTransactionException | SystemException e) {
             throw new CompletionException(e);
          }
-         putAllInternal(data, metadata, explicitFlags, ctx);
+         long flags = EnumUtil.mergeBitSets(explicitFlags, FlagBitSets.IGNORE_RETURN_VALUES);
+         putAllInternal(data, metadata, flags, ctx);
          return null;
       }, asyncExecutor);
    }
