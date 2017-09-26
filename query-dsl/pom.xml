@@ -37,6 +37,7 @@
                <systemPropertyVariables>
                   <log4j.configurationFile>${log4j.configurationFile}</log4j.configurationFile>
                   <build.directory>${project.build.directory}</build.directory>
+                  <com.arjuna.ats.arjuna.common.propertiesFile>test-jbossts-properties.xml</com.arjuna.ats.arjuna.common.propertiesFile>
                </systemPropertyVariables>
                <trimStackTrace>false</trimStackTrace>
                <argLine>-Xmx768m ${test.jvm.arguments}</argLine>

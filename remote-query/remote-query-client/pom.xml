@@ -40,6 +40,9 @@
                <jvm>${test.jvm}</jvm>
                <trimStackTrace>false</trimStackTrace>
                <argLine>-Xmx512m ${test.jvm.arguments}</argLine>
+               <systemPropertyVariables>
+                  <com.arjuna.ats.arjuna.common.propertiesFile>test-jbossts-properties.xml</com.arjuna.ats.arjuna.common.propertiesFile>
+               </systemPropertyVariables>
             </configuration>
             <dependencies>
                <dependency>

@@ -215,7 +215,7 @@
 
       <bnd.consumer.policy>$&lt;range;[==,+)&gt;</bnd.consumer.policy>
       <bnd.provider.policy>$&lt;range;[==,=+)&gt;</bnd.provider.policy>
-      
+
       <test.jvm/>
       <test.jvm.arguments/>
    </properties>
@@ -1688,6 +1688,7 @@
                   <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                   <log4j.configurationFile>${log4j.configurationFile}</log4j.configurationFile>
                   <build.directory>${project.build.directory}</build.directory>
+                  <com.arjuna.ats.arjuna.common.propertiesFile>test-jbossts-properties.xml</com.arjuna.ats.arjuna.common.propertiesFile>
 
                   <infinispan.module-suffix>-${project.artifactId}</infinispan.module-suffix>
                </systemPropertyVariables>
