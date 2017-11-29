@@ -14,6 +14,7 @@ import javax.transaction.TransactionManager;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -64,6 +65,9 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
 
    protected List<EmbeddedCacheManager> cacheManagers = Collections.synchronizedList(new ArrayList<EmbeddedCacheManager>());
    protected IdentityHashMap<Cache<?, ?>, ReplListener> listeners = new IdentityHashMap<Cache<?, ?>, ReplListener>();
+   // the cache mode set in configuration is shared in many tests, therefore we'll place the field,
+   // fluent setter cacheMode(...) and parameters() to this class.
+   protected CacheMode cacheMode;
 
    @BeforeClass(alwaysRun = true)
    public void createBeforeClass() throws Throwable {
@@ -429,6 +433,11 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
       for (EmbeddedCacheManager cm : cacheManagers) {
          assert cm.getMembers() != null && cm.getMembers().size() == size : message;
       }
+   }
+
+   public MultipleCacheManagersTest cacheMode(CacheMode cacheMode) {
+      this.cacheMode = cacheMode;
+      return this;
    }
 
    protected void removeCacheFromCluster(String cacheName) {

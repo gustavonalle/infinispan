@@ -69,6 +69,7 @@ public class ClusteredCacheMetricsHandler extends AbstractRuntimeOnlyHandler {
       NUMBER_OF_ENTRIES_IN_MEMORY(ClusterWideMetricKeys.NUMBER_OF_ENTRIES_IN_MEMORY, ModelType.INT, true),
       DATA_MEMORY_USED(ClusterWideMetricKeys.DATA_MEMORY_USED, ModelType.LONG, true),
       OFF_HEAP_MEMORY_USED(ClusterWideMetricKeys.OFF_HEAP_MEMORY_USED, ModelType.LONG, true),
+      MINIMUM_REQUIRED_NODES(ClusterWideMetricKeys.MINIMUM_REQUIRED_NODES, ModelType.INT, true),
       READ_WRITE_RATIO(ClusterWideMetricKeys.READ_WRITE_RATIO,ModelType.DOUBLE, true),
       REMOVE_HITS(ClusterWideMetricKeys.REMOVE_HITS, ModelType.LONG, true),
       REMOVE_MISSES(ClusterWideMetricKeys.REMOVE_MISSES, ModelType.LONG, true),
@@ -198,6 +199,9 @@ public class ClusteredCacheMetricsHandler extends AbstractRuntimeOnlyHandler {
             break;
          case OFF_HEAP_MEMORY_USED:
             result.set(clusterCacheStats.getOffHeapMemoryUsed());
+            break;
+         case MINIMUM_REQUIRED_NODES:
+            result.set(clusterCacheStats.getRequiredMinimumNumberOfNodes());
             break;
          case READ_WRITE_RATIO: {
             result.set(clusterCacheStats.getReadWriteRatio());

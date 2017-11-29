@@ -103,6 +103,11 @@ public interface Stats {
    long getAverageRemoveTime();
 
    /**
+    * @return Required minimum number of nodes to guarantee data consistency
+    */
+   int getRequiredMinimumNumberOfNodes();
+
+   /**
     * Reset statistics
     */
    void reset();

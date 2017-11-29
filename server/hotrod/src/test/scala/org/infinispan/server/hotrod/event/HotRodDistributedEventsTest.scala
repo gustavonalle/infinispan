@@ -8,5 +8,5 @@ import org.testng.annotations.Test
  */
 @Test(groups = Array("functional"), testName = "server.hotrod.event.HotRodDistributedEventsTest")
 class HotRodDistributedEventsTest extends AbstractHotRodClusterEventsTest {
-   override protected def cacheMode: CacheMode = CacheMode.DIST_SYNC
+   super.cacheMode(CacheMode.DIST_SYNC)
 }
