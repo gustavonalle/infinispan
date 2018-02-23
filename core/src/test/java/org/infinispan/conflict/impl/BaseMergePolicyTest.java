@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.conflict.ConflictManager;
 import org.infinispan.conflict.ConflictManagerFactory;
 import org.infinispan.container.entries.InternalCacheValue;
@@ -43,27 +44,27 @@ public abstract class BaseMergePolicyTest extends BasePartitionHandlingTest {
    protected int numberOfOwners;
    protected String description;
 
-   BaseMergePolicyTest() {
+   protected BaseMergePolicyTest() {
       this.partitionHandling = PartitionHandling.ALLOW_READ_WRITES;
       this.numberOfOwners = 2;
       this.valueAfterMerge = "DURING SPLIT";
    }
 
-   protected BaseMergePolicyTest setValueAfterMerge(Object val) {
-      valueAfterMerge = val;
-      return this;
+   protected BaseMergePolicyTest(CacheMode cacheMode, String description, int[] partition1, int[] partition2) {
+      this(cacheMode, description, null, partition1, partition2);
    }
 
-   protected BaseMergePolicyTest setPartitions(String description, AvailabilityMode mode, int[] partition1, int[] partition2) {
+   protected BaseMergePolicyTest(CacheMode cacheMode, String description, AvailabilityMode availabilityMode,
+                                 int[] partition1, int[] partition2) {
+      this();
+      this.cacheMode = cacheMode;
       this.description = description;
-      p0 = new PartitionDescriptor(mode, partition1);
-      p1 = new PartitionDescriptor(mode, partition2);
+      p0 = new PartitionDescriptor(availabilityMode, partition1);
+      p1 = new PartitionDescriptor(availabilityMode, partition2);
       numMembersInCluster = p0.getNodes().length + p1.getNodes().length;
-      return this;
-   }
 
-   protected BaseMergePolicyTest setPartitions(String description, int[] partition1, int[] partition2) {
-      return setPartitions(description, null, partition1, partition2);
+      if (cacheMode == CacheMode.REPL_SYNC)
+         numberOfOwners = numMembersInCluster;
    }
 
    protected void beforeSplit() {
@@ -104,7 +105,7 @@ public abstract class BaseMergePolicyTest extends BasePartitionHandlingTest {
       assertEquals(0, cm.getConflicts().count());
    }
 
-   public void testPartitionMergePolicy() throws Throwable {
+   public void testPartitionMergePolicy() {
       if (trace) log.tracef("beforeSplit()");
       beforeSplit();
 
@@ -120,14 +121,6 @@ public abstract class BaseMergePolicyTest extends BasePartitionHandlingTest {
 
       if (trace) log.tracef("afterConflictResolutionAndMerge()");
       afterConflictResolutionAndMerge();
-   }
-
-   protected AdvancedCache[] getPartitionCaches(PartitionDescriptor descriptor) {
-      int[] nodes = descriptor.getNodes();
-      AdvancedCache[] caches = new AdvancedCache[nodes.length];
-      for (int i = 0; i < nodes.length; i++)
-         caches[i] = advancedCache(nodes[i]);
-      return caches;
    }
 
    protected <K, V> AdvancedCache<K, V> getCacheFromNonPreferredPartition(AdvancedCache preferredCache) {
@@ -194,11 +187,6 @@ public abstract class BaseMergePolicyTest extends BasePartitionHandlingTest {
          String message = String.format("Key=%s, Value=%s, Cache Index=%s, Topology=%s", key, value, index, cache.getDistributionManager().getCacheTopology());
          assertEquals(message, value, cache.get(key));
       }
-   }
-
-   protected boolean clusterAndChFormed(int cacheIndex, int memberCount) {
-      return advancedCache(cacheIndex).getRpcManager().getTransport().getMembers().size() == memberCount &&
-            advancedCache(cacheIndex).getDistributionManager().getWriteConsistentHash().getMembers().size() == memberCount;
    }
 
    protected ConflictManager conflictManager(int index) {
