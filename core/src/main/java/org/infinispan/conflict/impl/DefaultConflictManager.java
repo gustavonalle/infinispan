@@ -78,7 +78,7 @@ public class DefaultConflictManager<K, V> implements InternalConflictManager<K, 
 
    private static final long localFlags = EnumUtil.bitSetOf(Flag.CACHE_MODE_LOCAL, Flag.SKIP_OWNERSHIP_CHECK, Flag.SKIP_LOCKING);
    private static final Flag[] userMergeFlags = new Flag[] {Flag.IGNORE_RETURN_VALUES};
-   private static final Flag[] autoMergeFlags = new Flag[] {Flag.IGNORE_RETURN_VALUES, Flag.PUT_FOR_STATE_TRANSFER};
+   private static final Flag[] autoMergeFlags = new Flag[] {Flag.IGNORE_RETURN_VALUES, Flag.PUT_FOR_STATE_TRANSFER, Flag.SKIP_REMOTE_LOOKUP};
 
    private AsyncInterceptorChain interceptorChain;
    private AdvancedCache<K, V> cache;
@@ -479,27 +479,23 @@ public class DefaultConflictManager<K, V> implements InternalConflictManager<K, 
             if (nextSegment < totalSegments) {
                try {
                   if (trace)
-                     log.tracef("Attempting to receive all replicas for segment %s with topology %s", (Integer)nextSegment, topology);
+                     log.tracef("Cache %s Attempting to receive all replicas for segment %s with topology %s", cacheName, (Integer)nextSegment, topology);
                   segmentRequestFuture = stateReceiver.getAllReplicasForSegment(nextSegment, topology);
                   long remainingTime = timeService.remainingTime(endTime, TimeUnit.MILLISECONDS);
                   List<Map<Address, CacheEntry<K, V>>> segmentEntries = segmentRequestFuture.get(remainingTime, TimeUnit.MILLISECONDS);
                   if (trace && !segmentEntries.isEmpty())
-                     log.tracef("Segment %s entries received: %s", (Integer)nextSegment, segmentEntries);
+                     log.tracef("Cache %s Segment %s entries received: %s", cacheName, (Integer)nextSegment, segmentEntries);
                   nextSegment++;
                   iterator = segmentEntries.iterator();
                } catch (CancellationException e) {
-                  if (trace) log.tracef("ReplicaSpliterator caught %s", e);
-                  streamInProgress.set(false);
+                  handleException(e);
                   return false;
                } catch (InterruptedException e) {
-                  if (trace) log.tracef("ReplicaSpliterator caught %s", e);
-                  stateReceiver.stop();
-                  streamInProgress.set(false);
+                  handleException(e);
                   Thread.currentThread().interrupt();
                   throw new CacheException(e);
                } catch (ExecutionException | TimeoutException e) {
-                  if (trace) log.tracef("ReplicaSpliterator caught %s", e);
-                  streamInProgress.set(false);
+                  handleException(e);
                   throw new CacheException(e.getMessage(), e.getCause());
                }
             } else {
@@ -512,9 +508,15 @@ public class DefaultConflictManager<K, V> implements InternalConflictManager<K, 
       }
 
       void stop() {
-         if (trace) log.tracef("Stop called on ReplicaSpliterator. Current segment %s", (Integer)nextSegment);
+         if (trace) log.tracef("Cache %s Stop() called on ReplicaSpliterator. Current segment %s", cacheName, (Integer)nextSegment);
          if (segmentRequestFuture != null)
             segmentRequestFuture.cancel(true);
+      }
+
+      void handleException(Exception e) {
+         if (trace) log.tracef("Cache %s ReplicaSpliterator caught %s", cacheName, e);
+         stateReceiver.stop();
+         streamInProgress.set(false);
       }
    }
 }
