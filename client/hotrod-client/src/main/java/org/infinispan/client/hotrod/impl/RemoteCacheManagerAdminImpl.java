@@ -50,7 +50,7 @@ public class RemoteCacheManagerAdminImpl implements RemoteCacheManagerAdmin {
    public <K, V> RemoteCache<K, V> createCache(String name, BasicConfiguration configuration) throws HotRodClientException {
       Map<String, byte[]> params = new HashMap<>(2);
       params.put(CACHE_NAME, string(name));
-      if (configuration != null) params.put(CACHE_CONFIGURATION, string(configuration.toXMLString()));
+      if (configuration != null) params.put(CACHE_CONFIGURATION, string(configuration.toXMLString(name)));
       if (flags != null && !flags.isEmpty()) params.put(FLAGS, flags(flags));
       operationsFactory.newAdminOperation("@@cache@create", params).execute();
       return cacheManager.getCache(name);
@@ -70,7 +70,7 @@ public class RemoteCacheManagerAdminImpl implements RemoteCacheManagerAdmin {
    public <K, V> RemoteCache<K, V> getOrCreateCache(String name, BasicConfiguration configuration) throws HotRodClientException {
       Map<String, byte[]> params = new HashMap<>(2);
       params.put(CACHE_NAME, string(name));
-      if (configuration != null) params.put(CACHE_CONFIGURATION, string(configuration.toXMLString()));
+      if (configuration != null) params.put(CACHE_CONFIGURATION, string(configuration.toXMLString(name)));
       if (flags != null && !flags.isEmpty()) params.put(FLAGS, flags(flags));
       operationsFactory.newAdminOperation("@@cache@getorcreate", params).execute();
       return cacheManager.getCache(name);
