@@ -76,7 +76,7 @@
       <dependency>
          <groupId>org.hibernate</groupId>
          <artifactId>hibernate-osgi</artifactId>
-         <version>${version.hibernate.core}</version>
+         <version>${version.hibernate.osgi}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
