@@ -1,6 +1,7 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
+import java.util.concurrent.TimeUnit;
 
 import org.infinispan.commons.api.BasicCacheContainer.DEFAULT_CACHE_NAME
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
@@ -58,6 +59,8 @@ class HotRodMergeTest extends BasePartitionHandlingTest {
    override protected def createCacheManagers(): Unit = {
       val dcc = hotRodCacheConfiguration(new ConfigurationBuilder())
       dcc.clustering.cacheMode(cacheMode).hash().numOwners(1)
+      // Must be less than timeout used in TestingUtil::waitForNoRebalance
+      .stateTransfer().timeout(1, TimeUnit.SECONDS);
       createClusteredCaches(numMembersInCluster, dcc, new TransportFlags().withFD(true).withMerge(true))
       waitForClusterToForm()
    }
@@ -83,11 +86,14 @@ class HotRodMergeTest extends BasePartitionHandlingTest {
       expectCompleteTopology(client, initialTopology)
       val p1 = new PartitionDescriptor(0)
       isolatePartition(p1.getNodes)
+      // isolatePartitions will always result in a CR fail as Node 0 tries to contact Node 1 in order to receive segments
+      // which is not possible as all messages received by Node 1 from Node 0 are discarded by the DISCARD protocol.
+      // Therefore, it is necessary for the state transfer timeout to be < then the timeout utilised by TestingUtil::waitForNoRebalance
       TestingUtil.waitForNoRebalance(cache(p1.node(0)))
       eventuallyExpectPartialTopology(client, initialTopology + 1)
 
       partition(0).merge(partition(1))
-      eventuallyExpectCompleteTopology(client, initialTopology + 2)
+      eventuallyExpectCompleteTopology(client, initialTopology + 3)
    }
 
 
