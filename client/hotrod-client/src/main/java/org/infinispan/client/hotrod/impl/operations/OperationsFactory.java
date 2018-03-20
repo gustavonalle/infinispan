@@ -221,6 +221,11 @@ public class OperationsFactory implements HotRodConstants {
             topologyId, flags(), cfg, taskName, marshalledParams);
    }
 
+   public AdminOperation newAdminOperation(String taskName, Map<String, byte[]> marshalledParams) {
+      return new AdminOperation(codec, transportFactory, cacheNameBytes,
+            topologyId, flags(), cfg, taskName, marshalledParams);
+   }
+
    private int flags(long lifespan, long maxIdle) {
       int intFlags = flags();
       if (lifespan == 0) {

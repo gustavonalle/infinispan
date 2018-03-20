@@ -20,8 +20,8 @@ import org.infinispan.client.hotrod.impl.transport.TransportFactory;
  */
 public class ExecuteOperation<T> extends RetryOnFailureOperation<T> {
 
-   private final String taskName;
-   private final Map<String, byte[]> marshalledParams;
+   protected final String taskName;
+   protected final Map<String, byte[]> marshalledParams;
 
    protected ExecuteOperation(Codec codec, TransportFactory transportFactory, byte[] cacheName,
                               AtomicInteger topologyId, int flags, Configuration cfg,

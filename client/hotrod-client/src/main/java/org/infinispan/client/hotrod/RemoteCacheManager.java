@@ -4,12 +4,17 @@ import static java.util.Arrays.asList;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
@@ -62,6 +67,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
 
    public static final String DEFAULT_CACHE_NAME = "___defaultcache";
    public static final String HOTROD_CLIENT_PROPERTIES = "hotrod-client.properties";
+   public static final String JSON_STRING_ARRAY_ELEMENT_REGEX = "(?:\")([^\"]*)(?:\",?)";
 
 
    private volatile boolean started = false;
@@ -77,8 +83,8 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    private final RemoteCounterManager counterManager;
 
    /**
-    * Create a new RemoteCacheManager using the supplied {@link Configuration}. The RemoteCacheManager will be started
-    * automatically
+    * Create a new RemoteCacheManager using the supplied {@link Configuration}.
+    * The RemoteCacheManager will be started automatically
     *
     * @param configuration the configuration to use for this RemoteCacheManager
     * @since 5.3
@@ -88,8 +94,8 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    }
 
    /**
-    * Create a new RemoteCacheManager using the supplied {@link Configuration}. The RemoteCacheManager will be started
-    * automatically only if the start parameter is true
+    * Create a new RemoteCacheManager using the supplied {@link Configuration}.
+    * The RemoteCacheManager will be started automatically only if the start parameter is true
     *
     * @param configuration the configuration to use for this RemoteCacheManager
     * @param start         whether or not to start the manager on return from the constructor.
@@ -119,7 +125,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    }
 
    /**
-    * Same as {@link #RemoteCacheManager(java.util.Properties)}, but it will try to lookup the config properties in the
+    * Same as {@link RemoteCacheManager(java.util.Properties)}, but it will try to lookup the config properties in the
     * classpath, in a file named <tt>hotrod-client.properties</tt>. If no properties can be found in the classpath, the
     * server tries to connect to "127.0.0.1:11222" in start.
     *
@@ -157,11 +163,26 @@ public class RemoteCacheManager implements RemoteCacheContainer {
     * undefined, it will return null.
     *
     * @param cacheName name of cache to retrieve
-    * @return a cache instance identified by cacheName or null if the cache name has not been defined
+    * @return a cache instance identified by cacheName or null if the cache
+    * name has not been defined
     */
    @Override
    public <K, V> RemoteCache<K, V> getCache(String cacheName) {
       return getCache(cacheName, configuration.forceReturnValues());
+   }
+
+   @Override
+   public Set<String> getCacheNames() {
+      OperationsFactory operationsFactory = new OperationsFactory(transportFactory, codec, asyncExecutorService, configuration);
+      String names = operationsFactory.newAdminOperation("@@cache@names", Collections.emptyMap()).execute();
+      Set<String> cacheNames = new HashSet<>();
+      // Simple pattern that matches the result which is represented as a JSON string array, e.g. ["cache1","cache2"]
+      Pattern pattern = Pattern.compile(JSON_STRING_ARRAY_ELEMENT_REGEX);
+      Matcher matcher = pattern.matcher(names);
+      while (matcher.find()) {
+         cacheNames.add(matcher.group(1));
+      }
+      return cacheNames;
    }
 
    @Override
@@ -172,7 +193,8 @@ public class RemoteCacheManager implements RemoteCacheContainer {
    /**
     * Retrieves the default cache from the remote server.
     *
-    * @return a remote cache instance that can be used to send requests to the default cache in the server
+    * @return a remote cache instance that can be used to send requests to the
+    * default cache in the server
     */
    @Override
    public <K, V> RemoteCache<K, V> getCache() {
