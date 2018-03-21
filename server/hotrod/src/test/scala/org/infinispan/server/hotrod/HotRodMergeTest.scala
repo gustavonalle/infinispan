@@ -74,7 +74,7 @@ class HotRodMergeTest extends BasePartitionHandlingTest {
       TestingUtil.waitForNoRebalance(cache(p0.node(0)))
       expectPartialTopology(client, initialTopology + 1)
       partition(0).merge(partition(1))
-      eventuallyExpectCompleteTopology(client, initialTopology + 8)
+      eventuallyExpectCompleteTopology(client, initialTopology + 7)
    }
 
    def testNewTopologySentAfterOverlappingMerge(m: Method) {
