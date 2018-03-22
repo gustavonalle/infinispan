@@ -4,7 +4,6 @@ package org.infinispan.topology;
 import static java.lang.String.format;
 import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
 import static org.infinispan.factories.KnownComponentNames.STATE_TRANSFER_EXECUTOR;
-import static org.infinispan.factories.KnownComponentNames.STATE_TRANSFER_EXECUTOR;
 import static org.infinispan.util.logging.LogFactory.CLUSTER;
 import static org.infinispan.util.logging.events.Messages.MESSAGES;
 
@@ -506,7 +505,7 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       CountDownLatch latch = new CountDownLatch(responsesByCache.size());
       LimitedExecutor cs = new LimitedExecutor("Merge-" + newViewId, stateTransferExecutor, maxThreads);
       for (final Map.Entry<String, Map<Address, CacheStatusResponse>> e : responsesByCache.entrySet()) {
-         CacheJoinInfo joinInfo = e.getValue().values().stream().findAny().get().getCacheJoinInfo();
+         CacheJoinInfo joinInfo = e.getValue().values().iterator().next().getCacheJoinInfo();
          ClusterCacheStatus cacheStatus = initCacheStatusIfAbsent(e.getKey(), joinInfo.getCacheMode());
          cs.execute(() -> {
             try {

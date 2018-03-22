@@ -771,6 +771,13 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
             setCurrentTopology(newTopology);
 
             clusterTopologyManager.broadcastTopologyUpdate(cacheName, newTopology, getAvailabilityMode(), isTotalOrder(), isDistributed());
+         } else {
+            // After a cluster view change that leaves only 1 node, we don't need either a topology update or a rebalance
+            // but we must still update the stable topology
+            if (stableTopology == null || cacheTopology.getTopologyId() != stableTopology.getTopologyId()) {
+               stableTopology = currentTopology;
+               clusterTopologyManager.broadcastStableTopologyUpdate(cacheName, stableTopology, isTotalOrder(), isDistributed());
+            }
          }
       } else {
          CacheTopology newTopology = new CacheTopology(newTopologyId, newRebalanceId, currentCH, balancedCH,
