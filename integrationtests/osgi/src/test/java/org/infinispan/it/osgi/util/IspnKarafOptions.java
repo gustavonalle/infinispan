@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.jar.Attributes;
@@ -240,11 +239,11 @@ public class IspnKarafOptions {
                        wrappedSplitTestBundle);
    }
 
-   public static UrlProvisionOption asStreamBundle(AbstractUrlProvisionOption<?> option, String newURLFormat, String... args) throws MalformedURLException, IOException {
+   public static UrlProvisionOption asStreamBundle(AbstractUrlProvisionOption<?> option, String newURLFormat, String... args) throws IOException {
       return asStreamBundle(option.getURL(), newURLFormat, args);
    }
 
-   public static UrlProvisionOption asStreamBundle(String url) throws MalformedURLException, IOException {
+   public static UrlProvisionOption asStreamBundle(String url) throws IOException {
       return asStreamBundle(url, "%s");
    }
 
@@ -256,17 +255,16 @@ public class IspnKarafOptions {
     * @param newURLFormat
     * @param args
     * @return
-    * @throws MalformedURLException
     * @throws IOException
     */
-   public static UrlProvisionOption asStreamBundle(String url, String newURLFormat, String... args) throws MalformedURLException, IOException {
+   public static UrlProvisionOption asStreamBundle(String url, String newURLFormat, String... args) throws IOException {
       InputStream in = new URL(String.format(newURLFormat, url, args)).openStream();
       try {
          return streamBundle(in);
       } finally {
          try {
             in.close();
-         } catch (IOException ex) {
+         } catch (IOException ignored) {
          }
       }
    }
@@ -348,9 +346,9 @@ public class IspnKarafOptions {
    }
 
    /* Run tests with uberjar by default */
-   private static boolean useUberJar() throws Exception {
+   private static boolean useUberJar() {
       String uberJar = System.getProperty(PROP_UBER_JAR);
-      return uberJar == null ? true : Boolean.parseBoolean(uberJar);
+      return uberJar == null || Boolean.parseBoolean(uberJar);
    }
 
 }
