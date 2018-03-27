@@ -77,12 +77,18 @@ public class ClusteredLockSplitBrainTest extends BasePartitionHandlingTest {
 
       splitCluster(new int[]{0, 1, 2}, new int[]{3, 4, 5});
 
+      // Wait for degraded topologies to work around ISPN-9008
+      partition(0).assertDegradedMode();
+      partition(1).assertDegradedMode();
+
       asList(lock0, lock1, lock2, lock3, lock4, lock5).forEach(lock -> {
          assertNotNull(lock);
-         assertFalse(await(lock.tryLock(100, TimeUnit.MILLISECONDS).exceptionally(ex -> {
-            assertException(ClusteredLockException.class, CompletionException.class, AvailabilityException.class, ex);
-            return Boolean.FALSE;
-         })));
+         await(lock.tryLock().whenComplete((r, ex) -> {
+            fail("should go the exceptionally! result=" + r + " exception= " + ex);
+         }).exceptionally(t -> {
+            assertException(CompletionException.class, ClusteredLockException.class, CompletionException.class, AvailabilityException.class, t);
+            return null;
+         }));
       });
    }
 
