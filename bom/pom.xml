@@ -65,7 +65,7 @@
 
       <version.maven-compiler-plugin>3.1</version.maven-compiler-plugin>
 
-      <version.protostream>4.2.0.CR1-redhat-1</version.protostream>
+      <version.protostream>4.2.0.CR2-redhat-1</version.protostream>
       <version.aesh>0.66.12.redhat-1</version.aesh>
       <version.antlr>3.5.2</version.antlr>
       <version.caffeine>2.4.0.redhat-1</version.caffeine>

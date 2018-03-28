@@ -53,7 +53,7 @@
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.antrun.maven.plugin>1.8</version.antrun.maven.plugin>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
-      <version.org.infinispan.protostream>4.2.0.CR1-redhat-1</version.org.infinispan.protostream>
+      <version.org.infinispan.protostream>4.2.0.CR2-redhat-1</version.org.infinispan.protostream>
       <version.http.client>4.5.0.redhat-1</version.http.client>
       <version.http.core>4.4.1.redhat-1</version.http.core>
       <version.org.picketbox>4.0.17.SP2</version.org.picketbox>
