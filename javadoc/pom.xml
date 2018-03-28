@@ -352,6 +352,10 @@
                            <title>Hot Rod Client API</title>
                            <packages>org.infinispan.client.hotrod*</packages>
                         </group>
+                        <group>
+                           <title>Commons</title>
+                           <packages>org.infinispan.commons*</packages>
+                        </group>
                      </groups>
                      <includeDependencySources>true</includeDependencySources>
                      <includeTransitiveDependencySources>false</includeTransitiveDependencySources>
@@ -371,7 +375,7 @@
                      </links>
                      <quiet>true</quiet>
                      <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-                     <subpackages>org.infinispan.client.hotrod</subpackages>
+                     <subpackages>org.infinispan.client.hotrod:org.infinispan.commons</subpackages>
                      <additionalparam>-Xdoclint:none</additionalparam>
 
                      <additionalDependencies>
