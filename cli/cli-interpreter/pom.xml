@@ -87,6 +87,11 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>org.scala-lang</groupId>
+         <artifactId>scala-library</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>net.spy</groupId>
          <artifactId>spymemcached</artifactId>
          <scope>test</scope>
