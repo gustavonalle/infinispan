@@ -90,7 +90,7 @@ final class RemoteQueryEngine extends BaseRemoteQueryEngine {
    @Override
    protected CacheQuery<?> makeCacheQuery(IckleParsingResult<Descriptor> ickleParsingResult, Query luceneQuery, IndexedQueryMode queryMode, Map<String, Object> namedParameters) {
       IndexingMetadata indexingMetadata = ickleParsingResult.getTargetEntityMetadata().getProcessedAnnotation(IndexingMetadata.INDEXED_ANNOTATION);
-      final Set<String> sortableFields = indexingMetadata != null ? indexingMetadata.getSortableFields() : Collections.emptySet();
+      Set<String> sortableFields = indexingMetadata != null ? indexingMetadata.getSortableFields() : Collections.emptySet();
       CustomTypeMetadata queryMetadata = new IndexedTypeMetadata(ProtobufValueWrapper.class, sortableFields);
       RemoteQueryDefinition queryDefinition;
       if (queryMode == IndexedQueryMode.BROADCAST) {
