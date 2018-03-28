@@ -1,7 +1,7 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit
 
 import org.infinispan.commons.api.BasicCacheContainer.DEFAULT_CACHE_NAME
 import org.infinispan.configuration.cache.{CacheMode, ConfigurationBuilder}
@@ -60,7 +60,7 @@ class HotRodMergeTest extends BasePartitionHandlingTest {
       val dcc = hotRodCacheConfiguration(new ConfigurationBuilder())
       dcc.clustering.cacheMode(cacheMode).hash().numOwners(1)
       // Must be less than timeout used in TestingUtil::waitForNoRebalance
-      .stateTransfer().timeout(1, TimeUnit.SECONDS);
+      .stateTransfer().timeout(10, TimeUnit.SECONDS)
       createClusteredCaches(numMembersInCluster, dcc, new TransportFlags().withFD(true).withMerge(true))
       waitForClusterToForm()
    }
