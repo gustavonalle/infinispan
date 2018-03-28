@@ -1,5 +1,6 @@
 package org.infinispan.partitionhandling.impl;
 
+import static org.infinispan.partitionhandling.impl.AvailabilityStrategy.readConsistentHash;
 import static org.infinispan.util.logging.events.Messages.MESSAGES;
 
 import java.util.ArrayList;
@@ -182,7 +183,7 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
 
          // Start conflict resolution by using the preferred topology's read CH as a base
          // And the union of all distinct consistent hashes as the source
-         ConsistentHash conflictHash = context.calculateConflictHash(distinctHashes);
+         ConsistentHash conflictHash = context.calculateConflictHash(preferredPartition.readCH, distinctHashes);
          mergedTopology = new CacheTopology(mergeTopologyId, mergeRebalanceId, preferredPartition.readCH,
                                             conflictHash, conflictHash, CacheTopology.Phase.CONFLICT_RESOLUTION,
                                             actualMembers, persistentUUIDManager.mapAddresses(actualMembers));
