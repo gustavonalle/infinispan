@@ -25,7 +25,6 @@ import org.infinispan.topology.CacheStatusResponse;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.topology.LocalTopologyManager;
 import org.infinispan.topology.ManagerStatusResponse;
-import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -136,8 +135,7 @@ public abstract class BaseMergePolicyTest extends BasePartitionHandlingTest {
 
    protected <K, V> AdvancedCache<K, V> getCacheFromPreferredPartition(AdvancedCache... caches) {
       Map<Address, CacheStatusResponse> statusResponses =
-         Arrays.stream(caches).map(c -> new KeyValuePair<>(address(c), getCacheStatus(c)))
-               .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+         Arrays.stream(caches).collect(Collectors.toMap(this::address, this::getCacheStatus));
 
       CacheTopology preferredTopology = new PreferAvailabilityStrategy(null, null)
                                            .computePreferredTopology(statusResponses);
