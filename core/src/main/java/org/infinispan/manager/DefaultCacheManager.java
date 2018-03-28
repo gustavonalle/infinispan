@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -332,6 +331,50 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       } catch (RuntimeException re) {
          throw new CacheConfigurationException(re);
       }
+      if (start)
+         start();
+   }
+
+   /**
+    * Constructs a new instance of the CacheManager, using the two configuration file names passed in. The first file
+    * contains the GlobalConfiguration configuration The second file contain the Default configuration. The third
+    * filename contains the named cache configuration This constructor first searches for the named file on the
+    * classpath, and failing that, treats the file name as an absolute path.
+    *
+    * @param start                    if true, the cache manager is started
+    * @param globalConfigurationFile  name of file that contains the global configuration
+    * @param defaultConfigurationFile name of file that contains the default configuration
+    * @param namedCacheFile           name of file that contains the named cache configuration
+    *
+    * @throws java.io.IOException if there is a problem with the configuration file.
+    */
+   @Deprecated
+   public DefaultCacheManager(String globalConfigurationFile, String defaultConfigurationFile, String namedCacheFile,
+                              boolean start) throws IOException {
+      ParserRegistry parserRegistry = new ParserRegistry();
+      defaultCacheName = DEFAULT_CACHE_NAME;
+      ConfigurationBuilderHolder holder = parserRegistry.parseFile(globalConfigurationFile);
+      holder.getGlobalConfigurationBuilder().defaultCacheName(defaultCacheName);
+      ConfigurationBuilderHolder defaultHolder = parserRegistry.parseFile(defaultConfigurationFile);
+      holder.getNamedConfigurationBuilders().put(defaultCacheName, defaultHolder.getDefaultConfigurationBuilder());
+
+      if (namedCacheFile != null) {
+         ConfigurationBuilderHolder namedHolder = parserRegistry.parseFile(namedCacheFile);
+         for (Map.Entry<String, ConfigurationBuilder> entry : namedHolder.getNamedConfigurationBuilders().entrySet()) {
+            holder.getNamedConfigurationBuilders().put(entry.getKey(), entry.getValue());
+         }
+      }
+
+      configurationManager = new ConfigurationManager(holder);
+      GlobalConfiguration globalConfiguration = configurationManager.getGlobalConfiguration();
+      globalComponentRegistry = new GlobalComponentRegistry(globalConfiguration, this, caches.keySet());
+      globalComponentRegistry.registerComponent(configurationManager, ConfigurationManager.class);
+      globalComponentRegistry.registerComponent(cacheDependencyGraph, CACHE_DEPENDENCY_GRAPH, false);
+      authzHelper = new AuthorizationHelper(globalConfiguration.security(), AuditContext.CACHEMANAGER, globalConfiguration.globalJmxStatistics().cacheManagerName());
+      stats = new CacheContainerStatsImpl(this);
+      health = new HealthImpl(this);
+      globalComponentRegistry.registerComponent(new HealthJMXExposerImpl(health), HealthJMXExposer.class);
+      cacheManagerAdmin = new DefaultCacheManagerAdmin(this, authzHelper, EnumSet.noneOf(CacheContainerAdmin.AdminFlag.class));
       if (start)
          start();
    }

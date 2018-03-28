@@ -23,7 +23,7 @@ public class DistributionInfo {
    private final boolean isWriteOwner;
    private final boolean isWriteBackup;
 
-   public DistributionInfo(int segmentId, Address primary, List<Address> readOwners, List<Address> writeOwners,
+   DistributionInfo(int segmentId, Address primary, List<Address> readOwners, List<Address> writeOwners,
                            Collection<Address> writeBackups, Address localAddress) {
       this.segmentId = segmentId;
       this.primary = primary;
