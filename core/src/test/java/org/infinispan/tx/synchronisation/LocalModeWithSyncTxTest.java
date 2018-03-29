@@ -6,11 +6,13 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.lookup.DummyTransactionManagerLookup;
 import org.infinispan.transaction.tm.DummyTransaction;
 import org.infinispan.tx.LocalModeTxTest;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
 /**
@@ -25,6 +27,15 @@ public class LocalModeWithSyncTxTest extends LocalModeTxTest {
       ConfigurationBuilder config = getDefaultStandaloneCacheConfig(true);
       config.transaction().transactionManagerLookup(new DummyTransactionManagerLookup()).useSynchronization(true);
       return TestCacheManagerFactory.createCacheManager(config);
+   }
+
+   @Factory
+   public Object[] factory() {
+      return new Object[] {
+            new LocalModeWithSyncTxTest().withStorage(StorageType.BINARY),
+            new LocalModeWithSyncTxTest().withStorage(StorageType.OBJECT),
+            new LocalModeWithSyncTxTest().withStorage(StorageType.OFF_HEAP)
+      };
    }
 
    public void testSyncRegisteredWithCommit() throws Exception {
