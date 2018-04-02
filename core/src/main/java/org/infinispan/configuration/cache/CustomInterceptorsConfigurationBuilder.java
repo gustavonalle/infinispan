@@ -15,7 +15,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
  */
 public class CustomInterceptorsConfigurationBuilder extends AbstractConfigurationChildBuilder implements Builder<CustomInterceptorsConfiguration> {
 
-   private List<InterceptorConfigurationBuilder> interceptorBuilders = new LinkedList<InterceptorConfigurationBuilder>();
+   private List<InterceptorConfigurationBuilder> interceptorBuilders = new LinkedList<>();
 
    CustomInterceptorsConfigurationBuilder(ConfigurationBuilder builder) {
       super(builder);
@@ -47,7 +47,7 @@ public class CustomInterceptorsConfigurationBuilder extends AbstractConfiguratio
       if (interceptorBuilders.isEmpty()) {
          return new CustomInterceptorsConfiguration();
       } else {
-         List<InterceptorConfiguration> interceptors = new ArrayList<InterceptorConfiguration>(interceptorBuilders.size());
+         List<InterceptorConfiguration> interceptors = new ArrayList<>(interceptorBuilders.size());
          for (InterceptorConfigurationBuilder builder : interceptorBuilders) interceptors.add(builder.create());
          return new CustomInterceptorsConfiguration(interceptors);
       }
@@ -55,7 +55,7 @@ public class CustomInterceptorsConfigurationBuilder extends AbstractConfiguratio
 
    @Override
    public CustomInterceptorsConfigurationBuilder read(CustomInterceptorsConfiguration template) {
-      this.interceptorBuilders = new LinkedList<InterceptorConfigurationBuilder>();
+      this.interceptorBuilders = new LinkedList<>();
       for (InterceptorConfiguration c : template.interceptors()) {
          this.interceptorBuilders.add(new InterceptorConfigurationBuilder(this).read(c));
       }
