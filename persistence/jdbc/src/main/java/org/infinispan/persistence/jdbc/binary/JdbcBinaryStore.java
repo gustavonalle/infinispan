@@ -324,10 +324,10 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
 
             for (Bucket bucket : existingBuckets.values()) {
                if (newBuckets.contains(bucket)) {
-                  prepareWriteStatement(insertBatch, bucket, tableManager.getInsertRowSql());
+                  prepareInsertStatement(insertBatch, bucket, tableManager.getInsertRowSql());
                   insertBatch.addBatch();
                } else {
-                  prepareWriteStatement(updateBatch, bucket, tableManager.getUpdateRowSql());
+                  prepareUpdateStatement(updateBatch, bucket, tableManager.getUpdateRowSql());
                   updateBatch.addBatch();
                }
             }
@@ -453,7 +453,7 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
                   }
 
                   if (!bucket.isEmpty()) {
-                     prepareWriteStatement(ps, bucket, sql);
+                     prepareUpdateStatement(ps, bucket, sql);
                      ps.addBatch();
                      purgedBuckets.add(bucket.getBucketId());
                   } else {
@@ -505,7 +505,7 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
          String sql = tableManager.getInsertRowSql();
          conn = connectionFactory.getConnection();
          ps = conn.prepareStatement(sql);
-         prepareWriteStatement(ps, bucket, sql);
+         prepareInsertStatement(ps, bucket, sql);
          int insertedRows = ps.executeUpdate();
          if (insertedRows != 1) {
             throw new PersistenceException("Unexpected insert result: '" + insertedRows + "'. Expected values is 1");
@@ -535,7 +535,7 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
          }
          conn = connectionFactory.getConnection();
          ps = conn.prepareStatement(sql);
-         prepareWriteStatement(ps, bucket, sql);
+         prepareUpdateStatement(ps, bucket, sql);
          int updatedRows = ps.executeUpdate();
          if (updatedRows != 1) {
             throw new PersistenceException("Unexpected  update result: '" + updatedRows + "'. Expected values is 1");
@@ -555,14 +555,24 @@ public class JdbcBinaryStore<K,V> extends AbstractJdbcStore<K,V> {
       }
    }
 
-   private void prepareWriteStatement(PreparedStatement ps, Bucket bucket, String sql) throws InterruptedException, SQLException {
+   private void prepareInsertStatement(PreparedStatement ps, Bucket bucket, String sql) throws InterruptedException, SQLException {
+      prepareWriteStatement(ps, bucket, sql, false);
+   }
+
+   private void prepareUpdateStatement(PreparedStatement ps, Bucket bucket, String sql) throws InterruptedException, SQLException {
+      prepareWriteStatement(ps, bucket, sql, true);
+   }
+
+   private void prepareWriteStatement(PreparedStatement ps, Bucket bucket, String sql, boolean update) throws InterruptedException, SQLException {
       if (trace) {
          log.tracef("Sql: '%s', on bucket: %s", sql, bucket);
       }
       ByteBuffer buffer = marshall(bucket.getStoredEntries());
-      ps.setBinaryStream(1, new ByteArrayInputStream(buffer.getBuf(), buffer.getOffset(), buffer.getLength()), buffer.getLength());
-      ps.setLong(2, bucket.timestampOfFirstEntryToExpire());
-      ps.setString(3, bucket.getBucketIdAsString());
+      if (update) {
+         tableManager.prepareUpdateStatement(ps, bucket.getBucketIdAsString(), bucket.timestampOfFirstEntryToExpire(), buffer);
+      } else {
+         tableManager.prepareUpsertStatement(ps, bucket.getBucketIdAsString(), bucket.timestampOfFirstEntryToExpire(), buffer);
+      }
    }
 
    protected Bucket loadBucket(Integer bucketId) {
