@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedMetadata;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
@@ -28,12 +29,16 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.exceptions.InvalidResponseException;
 import org.infinispan.client.hotrod.exceptions.RemoteIllegalLifecycleStateException;
 import org.infinispan.client.hotrod.exceptions.RemoteNodeSuspectException;
+import org.infinispan.client.hotrod.impl.operations.BulkGetKeysOperation;
+import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.Closeables;
 import org.infinispan.commons.util.Either;
 import org.infinispan.counter.api.CounterState;
 
@@ -213,6 +218,13 @@ public class Codec20 implements Codec, HotRodConstants {
       byte[] receivedListenerId = transport.readArray();
       assert Arrays.equals(receivedListenerId, listenerId);
       return decodeCounterEvent(counterName, transport);
+   }
+
+   @Override
+   public <K> CloseableIterator<K> keyIterator(RemoteCache<K, ?> remoteCache, OperationsFactory operationsFactory, int batchSize) {
+      BulkGetKeysOperation<K> op = operationsFactory.newBulkGetKeysOperation(0);
+      Set<K> keys = op.execute();
+      return Closeables.iterator(keys.iterator());
    }
 
    protected ClientEvent readPartialEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, short eventTypeId, List<String> whitelist) {
