@@ -356,6 +356,10 @@
                            <title>Commons</title>
                            <packages>org.infinispan.commons*</packages>
                         </group>
+                        <group>
+                           <title>Counter API</title>
+                           <packages>org.infinispan.counter*</packages>
+                        </group>
                      </groups>
                      <includeDependencySources>true</includeDependencySources>
                      <includeTransitiveDependencySources>false</includeTransitiveDependencySources>
@@ -375,7 +379,7 @@
                      </links>
                      <quiet>true</quiet>
                      <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-                     <subpackages>org.infinispan.client.hotrod:org.infinispan.commons</subpackages>
+                     <subpackages>org.infinispan.client.hotrod:org.infinispan.commons:org.infinispan.counter</subpackages>
                      <additionalparam>-Xdoclint:none</additionalparam>
 
                      <additionalDependencies>
