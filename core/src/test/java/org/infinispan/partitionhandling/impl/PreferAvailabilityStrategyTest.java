@@ -414,7 +414,7 @@ public class PreferAvailabilityStrategyTest extends AbstractInfinispanTest {
       when(context.getCacheName()).thenReturn(CACHE_NAME);
       if (conflicts.resolve()) {
          when(context.calculateConflictHash(cacheBC.readConsistentHash(),
-                                            setOf(cacheA.readConsistentHash(), cacheBC.readConsistentHash())))
+                                            setOf(cacheA.readConsistentHash(), cacheBC.readConsistentHash()), mergeMembers))
             .thenReturn(conflictResolutionConsistentHash(cacheA, cacheBC));
       }
 
@@ -460,7 +460,7 @@ public class PreferAvailabilityStrategyTest extends AbstractInfinispanTest {
       when(context.getCacheName()).thenReturn(CACHE_NAME);
       if (conflicts.resolve()) {
          when(context.calculateConflictHash(cacheBC.readConsistentHash(),
-                                            setOf(cacheA.readConsistentHash(), cacheBC.readConsistentHash())))
+                                            setOf(cacheA.readConsistentHash(), cacheBC.readConsistentHash()), mergeMembers))
             .thenReturn(conflictResolutionConsistentHash(cacheA, cacheBC));
       }
 
