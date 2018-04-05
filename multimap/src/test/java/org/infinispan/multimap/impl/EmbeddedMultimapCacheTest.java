@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.multimap.api.EmbeddedMultimapCacheManagerFactory;
-import org.infinispan.multimap.api.MultimapCache;
-import org.infinispan.multimap.api.MultimapCacheManager;
+import org.infinispan.multimap.api.embedded.EmbeddedMultimapCacheManagerFactory;
+import org.infinispan.multimap.api.embedded.MultimapCache;
+import org.infinispan.multimap.api.embedded.MultimapCacheManager;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.data.Person;
 import org.infinispan.test.fwk.TestCacheManagerFactory;

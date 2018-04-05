@@ -14,7 +14,7 @@ import org.infinispan.functional.FunctionalMap;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.functional.impl.FunctionalMapImpl;
 import org.infinispan.functional.impl.ReadWriteMapImpl;
-import org.infinispan.multimap.api.MultimapCache;
+import org.infinispan.multimap.api.embedded.MultimapCache;
 import org.infinispan.multimap.impl.function.ContainsFunction;
 import org.infinispan.multimap.impl.function.GetFunction;
 import org.infinispan.multimap.impl.function.PutFunction;

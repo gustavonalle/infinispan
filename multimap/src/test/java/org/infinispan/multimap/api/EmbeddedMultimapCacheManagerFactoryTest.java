@@ -2,6 +2,8 @@ package org.infinispan.multimap.api;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.multimap.api.embedded.EmbeddedMultimapCacheManagerFactory;
+import org.infinispan.multimap.api.embedded.MultimapCacheManager;
 import org.infinispan.test.Exceptions;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
