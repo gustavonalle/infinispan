@@ -215,6 +215,9 @@
 
       <bnd.consumer.policy>$&lt;range;[==,+)&gt;</bnd.consumer.policy>
       <bnd.provider.policy>$&lt;range;[==,=+)&gt;</bnd.provider.policy>
+      
+      <test.jvm/>
+      <test.jvm.arguments/>
    </properties>
 
    <dependencyManagement>
@@ -2345,16 +2348,17 @@
 
       <profile>
            <id>jdk-other-testsuite</id>
-           <activation>
-               <property><name>env.JAVA_HOME_OTHER</name></property>
-           </activation>
+           <properties>
+              <test.jvm>${env.TEST_JVM}/bin/java</test.jvm>
+              <test.jvm.arguments>${env.TEST_JVM_ARGUMENTS}</test.jvm.arguments>
+           </properties>
            <build>
               <plugins>
                  <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                       <jvm>${env.JAVA_HOME_OTHER}/bin/java</jvm>
+                       <jvm>${test.jvm}</jvm>
                        <parallel>tests</parallel>
                        <threadCount>${infinispan.test.parallel.threads}</threadCount>
                        <forkCount>1</forkCount>
@@ -2375,7 +2379,7 @@
                           </property>
                        </properties>
 
-                       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel</argLine>
+                       <argLine>-Xmx1G -XX:MaxPermSize=256m -Dsun.nio.ch.bugLevel ${test.jvm.arguments}</argLine>
                     </configuration>
                  </plugin>
               </plugins>

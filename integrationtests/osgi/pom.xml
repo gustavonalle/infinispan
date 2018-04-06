@@ -270,10 +270,12 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <jvm>${test.jvm}</jvm>
                <threadCount>1</threadCount>
                <parallel>classes</parallel>
                <systemPropertyVariables>
                   <java.io.tmpdir>${target.tmp.dir}</java.io.tmpdir>
+                  <test.jvm.arguments>${test.jvm.arguments}</test.jvm.arguments>
                </systemPropertyVariables>
                <runOrder>alphabetical</runOrder>
                <skipTests>${skipOSGiTests}</skipTests>
@@ -285,6 +287,7 @@
                      <value>${junitListener}</value>
                   </property>
                </properties>
+               <argLine>${test.jvm.arguments}</argLine>
             </configuration>
             <executions>
                <execution>

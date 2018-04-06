@@ -304,7 +304,9 @@ public class IspnKarafOptions {
    }
 
    public static Option commonOptions() throws Exception {
+      String testJvmArguments = System.getProperty("test.jvm.arguments");
       return composite(karafContainer(),
+                       testJvmArguments == null || testJvmArguments.isEmpty()? composite() : vmOptions(testJvmArguments.split("\\s+")),
                        vmOptions("-Djava.net.preferIPv4Stack=true", "-Djgroups.bind_addr=127.0.0.1"),
 //                       vmOptions("-agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=5006"),
                        verboseKaraf(),

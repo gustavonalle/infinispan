@@ -328,7 +328,8 @@
         <jvm.ip.stack>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false
             -Djboss.default.multicast.address=${mcast.ip}
         </jvm.ip.stack>
-        <server.jvm.args>${jvm.ip.stack} ${jvm.memory.args} ${transport.stack} ${jvm.x64.args}</server.jvm.args>
+        <server.jvm.args.intermediate>${jvm.ip.stack} ${jvm.memory.args} ${transport.stack} ${jvm.x64.args}</server.jvm.args.intermediate>
+        <server.jvm.args>${server.jvm.args.intermediate}</server.jvm.args>
         <log4j.configurationFile>log4j2.xml</log4j.configurationFile>
         <suite.manual.phase>integration-test</suite.manual.phase>
         <suite.queries.phase>integration-test</suite.queries.phase>
@@ -1417,11 +1418,9 @@
 
         <profile>
             <id>jdk-other-testsuite</id>
-            <activation>
-                <property><name>env.JAVA_HOME_OTHER</name></property>
-            </activation>
             <properties>
-                <server.jvm>${env.JAVA_HOME_OTHER}</server.jvm>
+                <server.jvm>${env.TEST_JVM}</server.jvm>
+                <server.jvm.args>${server.jvm.args.intermediate} ${env.TEST_JVM_ARGUMENTS}</server.jvm.args>
             </properties>
         </profile>
 	    

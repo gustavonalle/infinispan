@@ -33,12 +33,13 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration combine.self="override">
+               <jvm>${test.jvm}</jvm>
                <systemPropertyVariables>
                   <log4j.configurationFile>${log4j.configurationFile}</log4j.configurationFile>
                   <build.directory>${project.build.directory}</build.directory>
                </systemPropertyVariables>
                <trimStackTrace>false</trimStackTrace>
-               <argLine>-Xmx768m</argLine>
+               <argLine>-Xmx768m ${test.jvm.arguments}</argLine>
             </configuration>
             <dependencies>
                <dependency>

@@ -109,7 +109,7 @@
                   <build.directory>${project.build.directory}</build.directory>
                </systemPropertyVariables>
                <trimStackTrace combine.self="override">false</trimStackTrace>
-               <argLine combine.self="override">-Xmx768m</argLine>
+               <argLine combine.self="override">-Xmx768m ${test.jvm.arguments}</argLine>
                <properties combine.self="override">
                   <property>
                      <name>usedefaultlisteners</name>

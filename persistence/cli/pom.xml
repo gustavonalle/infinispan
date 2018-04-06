@@ -92,6 +92,7 @@
                   -Dcom.sun.management.jmxremote.port=2626
                   -Dcom.sun.management.jmxremote.authenticate=false
                   -Dcom.sun.management.jmxremote.ssl=false
+                  ${test.jvm.arguments}
                </argLine>
                <forkMode>once</forkMode>
             </configuration>
