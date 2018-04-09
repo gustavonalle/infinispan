@@ -18,7 +18,10 @@
     <property name="zip.dist.old" value="false" />
     <property name="trace" value="none"/>
     <property name="new.server.schema.version" value="${new.server.schema.version}"/>
-    <property name="hotrod.protocol.version" value="none"/>
+    <!-- property name="hotrod.protocol.version" value="${hotrod.protocol.version}"/ -->  
+    <condition property="hotrod.protocol.version" value="${hotrod.protocol.version}" else="2.5">
+      <isset property="${hotrod.protocol.version}" />
+    </condition>
     <condition property="jdk.vendor.qualifier" value="-ibm" else="">
         <contains string="${java.vendor}" substring="IBM" />
     </condition>
@@ -188,9 +191,6 @@
                    modifyInfinispan="${infinispan.parts}/xsite-server3.xml" modifyRelay="${other.parts}/xsite-relay-server3.xml"
                    modifyMulticastAddress="${other.parts}/switch-multicast-address.xml"/>
         <transform templateFile="${examples.transform}" in="examples/standalone-rcs-local.xml" out="examples/standalone-rcs-local.xml" modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"/>
-        <!-- This config uses 2.5 protocol version for remote cache store -->
-        <transform templateFile="${examples.transform}" in="examples/standalone-hotrod-rolling-upgrade.xml" out="examples/standalone-hotrod-rolling-upgrade-2.5.xml"
-                   modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml" remoteStoreHrVersion="2.5"/>
         <!-- This config just uses the current version protocol version for remote cache store -->
         <transform templateFile="${examples.transform}" in="examples/standalone-hotrod-rolling-upgrade.xml" out="examples/standalone-hotrod-rolling-upgrade.xml"
                    modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"/>
@@ -378,8 +378,9 @@
                    modifyInfinispan="${infinispan.parts}/rolling-upgrades-clustered-${new.server.schema.version}.xml"
                    infinispanServerEndpoint="${other.parts}/rolling-upgrades-server-endpoint-${new.server.schema.version}.xml"
                    modifyMulticastAddress="${other.parts}/switch-multicast-address.xml"/>
+        <transform in="examples/standalone-hotrod-rolling-upgrade.xml" out="testsuite/standalone-hotrod-rolling-upgrade-old.xml"
+                   modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml" remoteStoreHrVersion="${hotrod.protocol.version}"/>
         <transform in="examples/standalone-hotrod-rolling-upgrade.xml" out="testsuite/standalone-hotrod-rolling-upgrade.xml"/>
-        <transform in="examples/standalone-hotrod-rolling-upgrade-2.5.xml" out="testsuite/standalone-hotrod-rolling-upgrade-2.5.xml"/>
         <transform in="testsuite/clustered-hotrod-rolling-upgrade.xml" out="testsuite/clustered-hotrod-rolling-upgrade.xml"/>
     </target>
 
@@ -414,7 +415,7 @@
         <attribute name="addSecRealm" default="false"/>
         <attribute name="addSecRealm2" default="false"/>
         <attribute name="addConnection" default="false"/>
-        <attribute name="remoteStoreHrVersion" default="${hotrod.protocol.version}"/>
+        <attribute name="remoteStoreHrVersion" default="false"/>
         <element name="jdbc-conf" optional="yes"/>
         <element name="rest-sec" optional="yes"/>
 
