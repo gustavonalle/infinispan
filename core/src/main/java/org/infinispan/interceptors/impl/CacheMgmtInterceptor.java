@@ -317,7 +317,8 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
       long total = counters.get(StripeB.hitsFieldUpdater) + counters.get(StripeB.missesFieldUpdater);
       if (total == 0)
          return 0;
-      return (counters.get(StripeB.hitTimesFieldUpdater) + counters.get(StripeB.missTimesFieldUpdater)) / total;
+      total = (counters.get(StripeB.hitTimesFieldUpdater) + counters.get(StripeB.missTimesFieldUpdater)) / total;
+      return TimeUnit.NANOSECONDS.toMillis(total);
    }
 
    @ManagedAttribute(
@@ -331,7 +332,7 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
       long sum = counters.get(StripeB.storesFieldUpdater);
       if (sum == 0)
          return 0;
-      return (counters.get(StripeB.storeTimesFieldUpdater)) / sum;
+      return TimeUnit.NANOSECONDS.toMillis(counters.get(StripeB.storeTimesFieldUpdater) / sum);
    }
 
    @ManagedAttribute(
@@ -345,7 +346,7 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
       long removes = getRemoveHits();
       if (removes == 0)
          return 0;
-      return (counters.get(StripeB.removeTimesFieldUpdater)) / removes;
+      return TimeUnit.NANOSECONDS.toMillis(counters.get(StripeB.removeTimesFieldUpdater) / removes);
    }
 
    @ManagedAttribute(
