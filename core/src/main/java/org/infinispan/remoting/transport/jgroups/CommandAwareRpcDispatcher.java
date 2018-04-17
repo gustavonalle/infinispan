@@ -24,12 +24,14 @@ import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.util.TimeService;
+import org.infinispan.util.concurrent.CompletableFutures;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.infinispan.xsite.XSiteReplicateCommand;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.SuspectedException;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestOptions;
@@ -275,6 +277,15 @@ public class CommandAwareRpcDispatcher extends MessageDispatcher {
       if (trace) log.tracef("Replication task sending %s to single recipient %s with response mode %s", command,
             destination, mode);
       boolean rsvp = isRsvpCommand(command);
+
+      if (!this.members.contains(destination)) {
+         if (mode == ResponseMode.GET_NONE)
+            return null;
+         else {
+            SuspectedException suspectException = new SuspectedException(destination);
+            return new SingleResponseFuture(CompletableFutures.completedExceptionFuture(suspectException));
+         }
+      }
 
       // Replay capability requires responses from all members!
       Buffer buf = marshallCall(command);
