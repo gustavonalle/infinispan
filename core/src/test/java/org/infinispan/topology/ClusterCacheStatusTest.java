@@ -49,7 +49,8 @@ public class ClusterCacheStatusTest extends AbstractInfinispanTest {
       PreferAvailabilityStrategy availabilityStrategy =
          new PreferAvailabilityStrategy(eventLogManager, persistentUUIDManager);
       status = new ClusterCacheStatus(cacheManager, CACHE_NAME, availabilityStrategy,
-                                      topologyManager, transport, Optional.empty(), persistentUUIDManager, false);
+                                      topologyManager, transport, persistentUUIDManager, eventLogManager,
+                                      Optional.empty(), false);
    }
 
    @Test
