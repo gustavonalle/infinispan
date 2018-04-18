@@ -152,8 +152,7 @@ public class RemoteQueryDisableIndexingTest extends AbstractQueryDslTest {
       assertNotNull(searchIntegrator.getIndexManager(indexName));
 
       // index must be empty
-      //TODO [anistor] this assert is disabled due to https://issues.jboss.org/browse/ISPN-9020
-      //assertEquals(0, searchIntegrator.getStatistics().getNumberOfIndexedEntities(ProtobufValueWrapper.class.getName()));
+      assertEquals(0, searchIntegrator.getStatistics().getNumberOfIndexedEntities(ProtobufValueWrapper.class.getName()));
    }
 
    public void testEqNonIndexedType() {
