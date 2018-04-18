@@ -67,6 +67,8 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.ConsistentHashFactory;
+import org.infinispan.distribution.group.impl.PartitionerConsistentHash;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.KnownComponentNames;
@@ -97,6 +99,7 @@ import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.security.impl.SecureCacheImpl;
 import org.infinispan.statetransfer.StateTransferManager;
+import org.infinispan.statetransfer.StateTransferManagerImpl;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.util.DependencyGraph;
@@ -238,8 +241,9 @@ public class TestingUtil {
             boolean chContainsAllMembers;
             boolean currentChIsBalanced;
             if (cacheTopology != null) {
-               rebalanceInProgress = cacheTopology.getPendingCH() != null;
+               rebalanceInProgress = cacheTopology.getPhase() != CacheTopology.Phase.NO_REBALANCE;
                ConsistentHash currentCH = cacheTopology.getCurrentCH();
+               ConsistentHashFactory chf = StateTransferManagerImpl.pickConsistentHashFactory(c.getCacheManager().getCacheManagerConfiguration(), c.getCacheConfiguration());
 
                chContainsAllMembers = currentCH.getMembers().size() == caches.length;
                currentChIsBalanced = true;
@@ -250,6 +254,13 @@ public class TestingUtil {
                      currentChIsBalanced = false;
                      break;
                   }
+               }
+
+               // We need to check that the topologyId > 1 to account for nodes restarting
+               if (chContainsAllMembers && !rebalanceInProgress && cacheTopology.getTopologyId() > 1) {
+                  if (currentCH instanceof PartitionerConsistentHash)
+                     currentCH = extractField(currentCH, "ch");
+                  rebalanceInProgress = !chf.rebalance(currentCH).equals(currentCH);
                }
                if (chContainsAllMembers && !rebalanceInProgress && currentChIsBalanced)
                   break;

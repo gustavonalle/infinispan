@@ -111,7 +111,7 @@ public class StateTransferManagerImpl implements StateTransferManager {
          log.tracef("Starting StateTransferManager of cache %s on node %s", cacheName, rpcManager.getAddress());
       }
 
-      CacheJoinInfo joinInfo = new CacheJoinInfo(pickConsistentHashFactory(),
+      CacheJoinInfo joinInfo = new CacheJoinInfo(pickConsistentHashFactory(globalConfiguration, configuration),
             configuration.clustering().hash().hash(),
             configuration.clustering().hash().numSegments(),
             configuration.clustering().hash().numOwners(),
@@ -142,7 +142,7 @@ public class StateTransferManagerImpl implements StateTransferManager {
    /**
     * If no ConsistentHashFactory was explicitly configured we choose a suitable one based on cache mode.
     */
-   private ConsistentHashFactory pickConsistentHashFactory() {
+   public static ConsistentHashFactory pickConsistentHashFactory(GlobalConfiguration globalConfiguration, Configuration configuration) {
       ConsistentHashFactory factory = configuration.clustering().hash().consistentHashFactory();
       if (factory == null) {
          CacheMode cacheMode = configuration.clustering().cacheMode();
