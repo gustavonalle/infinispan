@@ -5,6 +5,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.infinispan.commons.util.ProcessorInfo;
+
 /**
  * Holder for read write locks that provides ability to retrieve them by offset and hashCode
  * @author wburns
@@ -17,7 +19,7 @@ public class StripedLock {
    private final ReadWriteLock[] locks;
 
    public StripedLock() {
-      this(Runtime.getRuntime().availableProcessors() * 2);
+      this(ProcessorInfo.availableProcessors() * 2);
    }
 
    public StripedLock(int lockCount) {
