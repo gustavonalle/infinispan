@@ -342,6 +342,58 @@ public class PreferAvailabilityStrategyTest extends AbstractInfinispanTest {
       verifyNoMoreInteractions(context);
    }
 
+   public void testMerge1Paused2StableAfterLosingAnotherNode() {
+      // A was paused and keeps the stable topology
+      // B and C finished rebalancing, then B was paused
+      // Now A has resumed and merges with C
+      // Conflict resolution is needed because A might have changed some keys by talking only to B
+      List<Address> mergeMembers = asList(A, C);
+      TestClusterCacheStatus cacheA = start(JOIN_INFO, A, B, C);
+      TestClusterCacheStatus cacheB = cacheA.copy();
+      cacheB.removeMembers(A);
+      cacheB.startRebalance(CacheTopology.Phase.READ_OLD_WRITE_ALL, B, C);
+      cacheB.advanceRebalance(CacheTopology.Phase.READ_ALL_WRITE_ALL);
+      cacheB.finishRebalance();
+      cacheB.updateStableTopology();
+      TestClusterCacheStatus cacheC = cacheB.copy();
+      cacheC.removeMembers(B);
+      cacheC.updateStableTopology();
+      CacheStatusResponse responseA = availableResponse(A, cacheA);
+      CacheStatusResponse responseC = availableResponse(C, cacheC);
+      Map<Address, CacheStatusResponse> statusResponses = mapOf(A, responseA, C, responseC);
+
+      when(context.getExpectedMembers()).thenReturn(mergeMembers);
+      when(context.getCacheName()).thenReturn(CACHE_NAME);
+      when(context.resolveConflictsOnMerge()).thenReturn(conflicts.resolve());
+      if (conflicts.resolve()) {
+         when(context.calculateConflictHash(cacheC.readConsistentHash(),
+                                            setOf(cacheA.readConsistentHash(), cacheC.readConsistentHash())))
+            .thenReturn(conflictResolutionConsistentHash(cacheC, cacheA));
+      }
+
+      strategy.onPartitionMerge(context, statusResponses);
+
+      TestClusterCacheStatus expectedCache = cacheC.copy();
+      if (conflicts.resolve()) {
+         expectedCache.startConflictResolution(conflictResolutionConsistentHash(cacheC, cacheA), A, C);
+      }
+      expectedCache.incrementIdsIfNeeded(cacheC);
+      verify(context).updateTopologiesAfterMerge(expectedCache.topology(), expectedCache.stableTopology(), null,
+                                                 conflicts.resolve());
+      if (!conflicts.resolve()) {
+         verify(context).updateCurrentTopology(singletonList(C));
+      }
+      verify(context).queueRebalance(mergeMembers);
+      verify(context).getExpectedMembers();
+      verify(context).getCacheName();
+      verify(context).resolveConflictsOnMerge();
+      if (conflicts.resolve()) {
+         verify(context).calculateConflictHash(cacheC.readConsistentHash(),
+                                               setOf(cacheA.readConsistentHash(), cacheC.readConsistentHash()));
+      }
+      verifyNoMoreInteractions(context);
+   }
+
    public void testMerge1HigherTopologyId2MoreNodesSameStableTopology() {
       // Partition A has a higher topology id, but BCD should win because it is larger
       List<Address> mergeMembers = asList(A, B, C);

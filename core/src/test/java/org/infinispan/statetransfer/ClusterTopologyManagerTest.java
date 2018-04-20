@@ -218,7 +218,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
 
       long endTime = System.currentTimeMillis();
       log.debugf("Merge took %s", Util.prettyPrintTime(endTime - startTime));
-      assert endTime - startTime < 30000 : "Merge took too long: " + Util.prettyPrintTime(endTime - startTime);
+      assert endTime - startTime < 60000 : "Merge took too long: " + Util.prettyPrintTime(endTime - startTime);
 
       // Check that a new node can join
       ConfigurationBuilder defaultConfig = getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC, true);
