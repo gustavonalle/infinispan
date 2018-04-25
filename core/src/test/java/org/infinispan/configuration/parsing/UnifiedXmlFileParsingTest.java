@@ -41,7 +41,6 @@ import org.infinispan.configuration.global.GlobalStateConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.conflict.MergePolicy;
 import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.factories.threads.DefaultThreadFactory;
 import org.infinispan.globalstate.ConfigurationStorage;
@@ -126,7 +125,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
       ph = cm.getCacheConfiguration("repl").clustering().partitionHandling();
       assertFalse(ph.enabled());
       assertEquals(PartitionHandling.ALLOW_READ_WRITES, ph.whenSplit());
-      assertEquals(MergePolicy.PREFERRED_ALWAYS, ph.mergePolicy());
+      assertEquals(MergePolicy.NONE, ph.mergePolicy());
 
       MemoryConfiguration mc = cm.getCacheConfiguration("off-heap-memory").memory();
       assertEquals(StorageType.OFF_HEAP, mc.storageType());
