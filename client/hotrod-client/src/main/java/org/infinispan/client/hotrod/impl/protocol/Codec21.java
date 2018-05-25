@@ -12,6 +12,7 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 
 public class Codec21 extends Codec20 {
@@ -35,7 +36,7 @@ public class Codec21 extends Codec20 {
    }
 
    @Override
-   protected ClientEvent readPartialEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, short eventTypeId, List<String> whitelist) {
+   protected ClientEvent readPartialEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, short eventTypeId, ClassWhiteList whitelist) {
       short status = transport.readByte();
       transport.readByte(); // ignore, no topology expected
       ClientEvent.Type eventType;

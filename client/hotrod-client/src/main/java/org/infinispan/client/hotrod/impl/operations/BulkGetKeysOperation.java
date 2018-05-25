@@ -39,7 +39,7 @@ public class BulkGetKeysOperation<K> extends RetryOnFailureOperation<Set<K>> {
       short status = readHeaderAndValidate(transport, params);
       Set<K> result = new HashSet<K>();
       while ( transport.readByte() == 1) { //there's more!
-         result.add(codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist()));
+         result.add(codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList()));
       }
       return result;
    }

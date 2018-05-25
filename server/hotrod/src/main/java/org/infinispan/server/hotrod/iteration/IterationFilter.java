@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Util;
@@ -25,16 +26,25 @@ import org.infinispan.metadata.Metadata;
 public class IterationFilter<K, V, C> extends AbstractKeyValueFilterConverter<K, V, C> {
    final boolean compat;
    final Optional<KeyValueFilterConverter<K, V, C>> providedFilter;
-   final Optional<Marshaller> marshaller;
+   Optional<Marshaller> marshaller;
    final boolean binary;
 
    protected Marshaller filterMarshaller;
+   Class<? extends Marshaller> marshallerClass;
 
    public IterationFilter(boolean compat, Optional<KeyValueFilterConverter<K, V, C>> providedFilter,
                           Optional<Marshaller> marshaller, boolean binary) {
       this.compat = compat;
       this.providedFilter = providedFilter;
       this.marshaller = marshaller;
+      this.binary = binary;
+   }
+
+   private IterationFilter(boolean compat, Optional<KeyValueFilterConverter<K, V, C>> providedFilter,
+                           Class<? extends Marshaller> marshaller, boolean binary) {
+      this.compat = compat;
+      this.providedFilter = providedFilter;
+      this.marshallerClass = marshaller;
       this.binary = binary;
    }
 
@@ -65,8 +75,12 @@ public class IterationFilter<K, V, C> extends AbstractKeyValueFilterConverter<K,
 
    @Inject
    public void injectDependencies(Cache cache) {
+      ClassWhiteList classWhiteList = cache.getCacheManager().getClassWhiteList();
+      if (marshaller == null) {
+         marshaller = Optional.ofNullable(MarshallerBuilder.fromClass(marshallerClass, providedFilter, classWhiteList));
+      }
       filterMarshaller = compat ? cache.getCacheConfiguration().compatibility().marshaller() :
-            marshaller.orElse(MarshallerBuilder.genericFromInstance(providedFilter));
+            marshaller.orElse(MarshallerBuilder.genericFromInstance(providedFilter, classWhiteList));
       providedFilter.ifPresent(kvfc -> cache.getAdvancedCache().getComponentRegistry().wireDependencies(kvfc));
 
    }
@@ -108,11 +122,9 @@ public class IterationFilter<K, V, C> extends AbstractKeyValueFilterConverter<K,
             filter = Optional.empty();
          }
 
-         Optional<Class<Marshaller>> marshallerClass = input.readBoolean() ? Optional.of((Class) input.readObject()) :
-               Optional.empty();
+         Class<Marshaller> marshallerClass = input.readBoolean() ? (Class) input.readObject() : null;
 
-         return new IterationFilter(compat, filter,
-               Optional.ofNullable(MarshallerBuilder.fromClass(marshallerClass, filter)), binary);
+         return new IterationFilter(compat, filter, marshallerClass, binary);
       }
    }
 }

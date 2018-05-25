@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 
 /**
  * Utilities to convert between text/plain, octet-stream, java-objects and url-encoded contents.
@@ -29,6 +30,8 @@ import org.infinispan.commons.logging.LogFactory;
 public final class StandardConversions {
 
    private static final Log log = LogFactory.getLog(StandardConversions.class);
+   
+   private static final JavaSerializationMarshaller JAVA_SERIALIZATION_MARSHALLER = new JavaSerializationMarshaller();
 
    /**
     * Convert text content to a different encoding.
@@ -78,9 +81,9 @@ public final class StandardConversions {
     * @return String representation of the text content.
     * @throws EncodingException if the source cannot be interpreted as plain text.
     */
-   public static Object convertTextToObject(Object source, MediaType sourceType) {
+   public static String convertTextToObject(Object source, MediaType sourceType) {
       if (source == null) return null;
-      if (source instanceof String) return source;
+      if (source instanceof String) return source.toString();
       if (source instanceof byte[]) {
          byte[] bytesSource = (byte[]) source;
          return new String(bytesSource, sourceType.getCharset());
@@ -136,7 +139,7 @@ public final class StandardConversions {
          return new String(source, UTF_8);
       }
       try {
-         return JavaSerializationEncoder.INSTANCE.unmarshall(source);
+         return JAVA_SERIALIZATION_MARSHALLER.objectFromByteBuffer(source);
       } catch (IOException | ClassNotFoundException e) {
          throw log.conversionNotSupported(source, MediaType.APPLICATION_OCTET_STREAM_TYPE, destination.toString());
       }
@@ -160,7 +163,7 @@ public final class StandardConversions {
       Object decoded = decodeObjectContent(source, sourceMediaType);
       if (decoded instanceof byte[]) return (byte[]) decoded;
       if (decoded instanceof String) return ((String) decoded).getBytes(StandardCharsets.UTF_8);
-      return JavaSerializationEncoder.INSTANCE.marshall(source);
+      return JAVA_SERIALIZATION_MARSHALLER.objectToByteBuffer(source);
    }
 
    /**

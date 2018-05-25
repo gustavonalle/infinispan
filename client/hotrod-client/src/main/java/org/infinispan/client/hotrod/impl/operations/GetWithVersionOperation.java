@@ -1,6 +1,5 @@
 package org.infinispan.client.hotrod.impl.operations;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.VersionedValue;
@@ -48,7 +47,7 @@ public class GetWithVersionOperation<V> extends AbstractKeyOperation<VersionedVa
          if (trace) {
             log.tracef("Received version: %d", (Long) version);
          }
-         V value = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+         V value = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
          result = new VersionedValueImpl<V>(version, value);
       }
       return result;

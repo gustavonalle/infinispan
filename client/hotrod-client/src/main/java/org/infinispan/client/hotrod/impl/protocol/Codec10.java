@@ -28,6 +28,7 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Either;
 import org.infinispan.commons.util.Util;
@@ -137,12 +138,12 @@ public class Codec10 implements Codec {
    }
 
    @Override
-   public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist) {
+   public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist) {
       return null;  // No events sent in Hot Rod 1.x protocol
    }
 
    @Override
-   public Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist) {
+   public Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist) {
       return null;  // No events sent in Hot Rod 1.x protocol
    }
 
@@ -152,7 +153,7 @@ public class Codec10 implements Codec {
    }
 
    @Override
-   public Object returnPossiblePrevValue(Transport transport, short status, int flags, List<String> whitelist) {
+   public Object returnPossiblePrevValue(Transport transport, short status, int flags, ClassWhiteList whitelist) {
       Marshaller marshaller = transport.getTransportFactory().getMarshaller();
       if (hasForceReturn(flags)) {
          byte[] bytes = transport.readArray();
@@ -174,7 +175,7 @@ public class Codec10 implements Codec {
    }
 
    @Override
-   public <T> T readUnmarshallByteArray(Transport transport, short status, List<String> whitelist) {
+   public <T> T readUnmarshallByteArray(Transport transport, short status, ClassWhiteList whitelist) {
       return CodecUtils.readUnmarshallByteArray(transport, status, whitelist);
    }
 

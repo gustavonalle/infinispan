@@ -1,19 +1,33 @@
 package org.infinispan.rest;
 
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_JSON;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_JSON_TYPE;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT_TYPE;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OCTET_STREAM_TYPE;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_SERIALIZED_OBJECT_TYPE;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_XML;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_XML_TYPE;
 import static org.infinispan.commons.dataconversion.MediaType.TEXT_PLAIN_TYPE;
 import static org.infinispan.rest.JSONConstants.TYPE;
+import static org.infinispan.rest.assertion.ResponseAssertion.assertThat;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
+import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.rest.assertion.ResponseAssertion;
+import org.infinispan.rest.dataconversion.JsonTranscoder;
+import org.infinispan.rest.dataconversion.XMLTranscoder;
+import org.infinispan.rest.search.entity.Person;
 import org.testng.annotations.Test;
 
 @Test(groups = "functional", testName = "rest.RestOperationsTest")
@@ -256,5 +270,58 @@ public class RestOperationsTest extends BaseRestOperationsTest {
       //then
       ResponseAssertion.assertThat(response).isOk();
       Assertions.assertThat(restServer.getCacheManager().getCache("default")).isEmpty();
+   }
+
+   @Test
+   public void testServerDeserialization() throws Exception {
+      Object value = new Person();
+
+      byte[] jbossMarshalled = new GenericJBossMarshaller().objectToByteBuffer(value);
+      byte[] jsonMarshalled = (byte[]) new JsonTranscoder().transcode(value, APPLICATION_OBJECT, APPLICATION_JSON);
+      byte[] xmlMarshalled = (byte[]) new XMLTranscoder().transcode(value, APPLICATION_OBJECT, APPLICATION_XML);
+      byte[] javaMarshalled = new JavaSerializationMarshaller().objectToByteBuffer(value);
+
+      String expectError = "Class '" + value.getClass().getName() + "' blocked by deserialization white list";
+
+      ContentResponse response1 = client
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "objectCache", "addr1"))
+            .content(new BytesContentProvider(jbossMarshalled))
+            .header(HttpHeader.CONTENT_TYPE, APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .method(HttpMethod.PUT)
+            .send();
+
+      assertThat(response1).isError();
+      assertThat(response1).containsReturnedText(expectError);
+
+      ContentResponse response2 = client
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "objectCache", "addr2"))
+            .content(new BytesContentProvider(jsonMarshalled))
+            .header(HttpHeader.CONTENT_TYPE, APPLICATION_JSON_TYPE)
+            .method(HttpMethod.PUT)
+            .send();
+
+      assertThat(response2).isError();
+      assertThat(response2).containsReturnedText(expectError);
+
+      ContentResponse response3 = client
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "objectCache", "addr3"))
+            .content(new BytesContentProvider(xmlMarshalled))
+            .header(HttpHeader.CONTENT_TYPE, APPLICATION_XML_TYPE)
+            .method(HttpMethod.PUT)
+            .send();
+
+      assertThat(response3).isError();
+      assertThat(response3).containsReturnedText(expectError);
+
+      ContentResponse response4 = client
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "objectCache", "addr4"))
+            .content(new BytesContentProvider(javaMarshalled))
+            .header(HttpHeader.CONTENT_TYPE, APPLICATION_SERIALIZED_OBJECT_TYPE)
+            .method(HttpMethod.PUT)
+            .send();
+
+      assertThat(response4).isError();
+      assertThat(response4).containsReturnedText(expectError);
+
    }
 }

@@ -42,6 +42,7 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.Util;
@@ -70,11 +71,11 @@ public class ClientListenerNotifier {
    private final Marshaller marshaller;
    private final TransportFactory transportFactory;
 
-   private final List<String> whitelist;
+   private final ClassWhiteList whitelist;
 
    protected ClientListenerNotifier(
       ExecutorService executor, Codec codec,
-      Marshaller marshaller, TransportFactory transportFactory, List<String> whitelist) {
+      Marshaller marshaller, TransportFactory transportFactory, ClassWhiteList whitelist) {
       this.executor = executor;
       this.codec = codec;
       this.marshaller = marshaller;
@@ -82,7 +83,7 @@ public class ClientListenerNotifier {
       this.whitelist = whitelist;
    }
 
-   public static ClientListenerNotifier create(Codec codec, Marshaller marshaller, TransportFactory transportFactory, List<String> whitelist) {
+   public static ClientListenerNotifier create(Codec codec, Marshaller marshaller, TransportFactory transportFactory, ClassWhiteList whitelist) {
       ExecutorService executor = Executors.newCachedThreadPool(getRestoreThreadNameThreadFactory());
       return new ClientListenerNotifier(executor, codec, marshaller, transportFactory, whitelist);
    }

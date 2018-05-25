@@ -13,6 +13,7 @@ import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingStrategy;
 import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.TypedProperties;
 
@@ -50,6 +51,7 @@ public class Configuration {
    private final List<ClusterConfiguration> clusters;
    private final List<String> serialWhitelist;
    private final int batchSize;
+   private final ClassWhiteList classWhiteList;
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends FailoverRequestBalancingStrategy> balancingStrategyClass, FailoverRequestBalancingStrategy balancingStrategy, ClassLoader classLoader,
          ClientIntelligence clientIntelligence, ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate,
@@ -81,6 +83,7 @@ public class Configuration {
       this.nearCache = nearCache;
       this.clusters = clusters;
       this.serialWhitelist = serialWhitelist;
+      this.classWhiteList = new ClassWhiteList(serialWhitelist);
       this.batchSize = batchSize;
    }
 
@@ -190,6 +193,10 @@ public class Configuration {
 
    public List<String> serialWhitelist() {
       return serialWhitelist;
+   }
+
+   public ClassWhiteList getClassWhiteList() {
+      return classWhiteList;
    }
 
    public int batchSize() {

@@ -18,6 +18,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.dataconversion.GenericJbossMarshallerEncoder;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.UTF8Encoder;
@@ -67,6 +68,7 @@ public class ScriptingManagerImpl implements ScriptingManager {
    private final Function<String, ScriptEngine> getEngineByName = this::getEngineByName;
    private final Function<String, ScriptEngine> getEngineByExtension = this::getEngineByExtension;
    private InternalCacheRegistry internalCacheRegistry;
+   private ClassWhiteList classWhiteList;
 
    public ScriptingManagerImpl() {
    }
@@ -76,6 +78,7 @@ public class ScriptingManagerImpl implements ScriptingManager {
       this.cacheManager = cacheManager;
       this.taskManager = taskManager;
       this.internalCacheRegistry = internalCacheRegistry;
+      this.classWhiteList = cacheManager.getClassWhiteList();
    }
 
 
@@ -98,8 +101,9 @@ public class ScriptingManagerImpl implements ScriptingManager {
       GlobalConfiguration globalConfiguration = cacheManager.getGlobalComponentRegistry().getGlobalConfiguration();
 
       ConfigurationBuilder cfg = new ConfigurationBuilder();
+      GenericJBossMarshaller marshaller = new GenericJBossMarshaller(classWhiteList);
       cfg.compatibility().enable()
-            .marshaller(new GenericJBossMarshaller()).customInterceptors().addInterceptor().interceptor(new ScriptingInterceptor()).before(CacheMgmtInterceptor.class);
+            .marshaller(marshaller).customInterceptors().addInterceptor().interceptor(new ScriptingInterceptor()).before(CacheMgmtInterceptor.class);
       if (globalConfiguration.security().authorization().enabled()) {
          globalConfiguration.security().authorization().roles().put(SCRIPT_MANAGER_ROLE, new CacheRoleImpl(SCRIPT_MANAGER_ROLE, AuthorizationPermission.ALL));
          cfg.security().authorization().enable().role(SCRIPT_MANAGER_ROLE);

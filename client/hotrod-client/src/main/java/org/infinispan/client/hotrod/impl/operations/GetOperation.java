@@ -1,6 +1,5 @@
 package org.infinispan.client.hotrod.impl.operations;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
@@ -35,7 +34,7 @@ public class GetOperation<V> extends AbstractKeyOperation<V> {
          result = null;
       } else {
          if (HotRodConstants.isSuccess(status)) {
-            result = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+            result = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
          }
       }
       return result;

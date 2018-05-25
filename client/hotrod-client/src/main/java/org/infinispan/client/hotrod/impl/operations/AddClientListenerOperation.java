@@ -94,7 +94,7 @@ public class AddClientListenerOperation extends RetryOnFailureOperation<Short> {
       Either<Short, ClientEvent> either;
       do {
          // Process state transfer related events or add listener response
-         either = codec.readHeaderOrEvent(dedicatedTransport, params, listenerId, listenerNotifier.getMarshaller(), cfg.serialWhitelist());
+         either = codec.readHeaderOrEvent(dedicatedTransport, params, listenerId, listenerNotifier.getMarshaller(), cfg.getClassWhiteList());
          switch(either.type()) {
             case LEFT:
                if (HotRodConstants.isSuccess(either.left()))

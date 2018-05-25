@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
@@ -38,11 +39,13 @@ public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeConte
    private final NettyTransport transport;
    private final Executor executor;
    private final TaskManager taskManager;
+   private final ClassWhiteList classWhiteList;
 
    public ContextHandler(HotRodServer server, NettyTransport transport, Executor executor) {
       this.server = server;
       this.transport = transport;
       this.executor = executor;
+      this.classWhiteList = server.getClassWhiteList();
       this.taskManager = SecurityActions.getGlobalComponentRegistry(server.getCacheManager()).getComponent(TaskManager.class);
    }
 
@@ -111,7 +114,7 @@ public class ContextHandler extends SimpleChannelInboundHandler<CacheDecodeConte
             if (server.getMarshaller() != null) {
                marshaller = server.getMarshaller();
             } else {
-               marshaller = new GenericJBossMarshaller();
+               marshaller = new GenericJBossMarshaller(classWhiteList);
             }
             TaskContext taskContext = new TaskContext()
                   .marshaller(marshaller)

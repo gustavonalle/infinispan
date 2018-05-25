@@ -54,12 +54,12 @@ public class ITestUtils {
     }
 
     public static ConfigurationBuilder createConfigBuilder(String hostName, int port) {
-        return createConfigBuilder(hostName, port, ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString());
+        return createConfigBuilder(hostName, port, ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString()).addJavaSerialWhiteList(".*");
     }
 
     public static ConfigurationBuilder createConfigBuilder(String hostName, int port, String protocolVersion) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.addServer().host(hostName).port(port).protocolVersion(protocolVersion);
+        builder.addServer().host(hostName).port(port).protocolVersion(protocolVersion).addJavaSerialWhiteList(".*");
         return builder;
     }
 

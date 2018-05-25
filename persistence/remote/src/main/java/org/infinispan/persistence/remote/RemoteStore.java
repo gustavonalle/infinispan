@@ -13,6 +13,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ExhaustedAction;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
@@ -92,7 +93,8 @@ public class RemoteStore<K, V> implements AdvancedLoadWriteStore<K, V>, FlagAffe
       } else if (configuration.hotRodWrapping()) {
          marshaller = new HotRodEntryMarshaller(ctx.getByteBufferFactory());
       } else if (configuration.rawValues()) {
-         marshaller = new GenericJBossMarshaller(Thread.currentThread().getContextClassLoader());
+         ClassWhiteList whiteList = ctx.getCache().getCacheManager().getClassWhiteList();
+         marshaller = new GenericJBossMarshaller(Thread.currentThread().getContextClassLoader(), whiteList);
       } else {
          marshaller = ctx.getMarshaller();
       }

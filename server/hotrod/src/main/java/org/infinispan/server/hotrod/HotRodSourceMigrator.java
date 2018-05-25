@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.container.versioning.NumericVersion;
@@ -30,9 +31,9 @@ class HotRodSourceMigrator implements SourceMigrator {
       return cache.getName();
    }
 
-   HotRodSourceMigrator(AdvancedCache<byte[], byte[]> cache) {
+   HotRodSourceMigrator(AdvancedCache<byte[], byte[]> cache, ClassWhiteList classWhiteList) {
       this.cache = cache;
-      this.marshaller = new GenericJBossMarshaller(); // TODO: Hard coded!  Yuck!  Assumes the Synchronizer service will use the same marshaller.  Doesn't matter what actual clients use to store/retrieve data.
+      this.marshaller = new GenericJBossMarshaller(classWhiteList); // TODO: Hard coded!  Yuck!  Assumes the Synchronizer service will use the same marshaller.  Doesn't matter what actual clients use to store/retrieve data.
    }
 
    @Override

@@ -41,8 +41,8 @@ public class BulkGetOperation<K, V> extends RetryOnFailureOperation<Map<K, V>> {
       short status = readHeaderAndValidate(transport, params);
       Map<K, V> result = new HashMap<K, V>();
       while ( transport.readByte() == 1) { //there's more!
-         K key = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
-         V value = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+         K key = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
+         V value = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
          result.put(key, value);
       }
       return result;

@@ -5,7 +5,6 @@ import static org.infinispan.test.TestingUtil.extractField;
 import static org.infinispan.test.TestingUtil.replaceField;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -19,6 +18,7 @@ import org.infinispan.client.hotrod.exceptions.TransportException;
 import org.infinispan.client.hotrod.impl.protocol.Codec25;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.test.MultiHotRodServersTest;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -103,7 +103,7 @@ public class ClientListenerRetryTest extends MultiHotRodServersTest {
       private final IOException failWith = new IOException("Connection reset by peer");
 
       @Override
-      public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist) {
+      public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist) {
          if (failure) {
             throw new TransportException(failWith, transport.getRemoteSocketAddress());
          }

@@ -20,11 +20,13 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.dataconversion.CompatModeEncoder;
 import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.configuration.cache.CompatibilityModeConfiguration;
 import org.infinispan.container.entries.CacheEntry;
@@ -100,9 +102,16 @@ class CompatInfo {
       this.valueEncoder = valueEncoder;
    }
 
-   static CompatInfo create(CompatibilityModeConfiguration config) {
-      return new CompatInfo(config.enabled(), config.enabled() ?
-            new CompatModeEncoder(config.marshaller()) : IdentityEncoder.INSTANCE);
+   static CompatInfo create(CompatibilityModeConfiguration config, ClassWhiteList classWhiteList) {
+      boolean compatEnabled = config.enabled();
+      Marshaller marshaller;
+      if (compatEnabled && config.marshaller() != null) {
+         marshaller = config.marshaller();
+      } else {
+         marshaller = new GenericJBossMarshaller(classWhiteList);
+      }
+      return new CompatInfo(compatEnabled, compatEnabled ?
+            new CompatModeEncoder(marshaller) : IdentityEncoder.INSTANCE);
    }
 }
 
@@ -116,9 +125,11 @@ public class DefaultIterationManager implements IterationManager {
    private final Map<String, IterationState> iterationStateMap = CollectionFactory.makeConcurrentMap();
    private final Map<String, KeyValueFilterConverterFactory> filterConverterFactoryMap =
          CollectionFactory.makeConcurrentMap();
+   private final ClassWhiteList classWhiteList;
 
-   public DefaultIterationManager(EmbeddedCacheManager cacheManager) {
+   public DefaultIterationManager(EmbeddedCacheManager cacheManager, ClassWhiteList classWhiteList) {
       this.cacheManager = cacheManager;
+      this.classWhiteList = classWhiteList;
    }
 
    @Override
@@ -134,7 +145,7 @@ public class DefaultIterationManager implements IterationManager {
       segments.map(bitSet -> stream.filterKeySegments(bitSet.stream().boxed().collect(Collectors.toSet())));
 
       IterationSegmentsListener segmentListener = new IterationSegmentsListener();
-      CompatInfo compatInfo = CompatInfo.create(compatibilityConfig);
+      CompatInfo compatInfo = CompatInfo.create(compatibilityConfig, classWhiteList);
 
       Stream<CacheEntry<Object, Object>> filteredStream;
       if (namedFactory.isPresent()) {
@@ -177,7 +188,7 @@ public class DefaultIterationManager implements IterationManager {
    }
 
    private Object[] unmarshallParams(byte[][] params, Object factory) {
-      Marshaller m = marshaller.orElse(MarshallerBuilder.genericFromInstance(Optional.of(factory)));
+      Marshaller m = marshaller.orElse(MarshallerBuilder.genericFromInstance(Optional.of(factory), classWhiteList));
       try {
          Object[] objectParams = new Object[params.length];
          int i = 0;

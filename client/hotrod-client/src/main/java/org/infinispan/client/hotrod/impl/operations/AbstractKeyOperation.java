@@ -52,7 +52,7 @@ public abstract class AbstractKeyOperation<T> extends RetryOnFailureOperation<T>
    }
 
    protected T returnPossiblePrevValue(Transport transport, short status) {
-      return (T) codec.returnPossiblePrevValue(transport, status, flags, cfg.serialWhitelist());
+      return (T) codec.returnPossiblePrevValue(transport, status, flags, cfg.getClassWhiteList());
    }
 
    protected VersionedOperationResponse returnVersionedOperationResponse(Transport transport, HeaderParams params) {

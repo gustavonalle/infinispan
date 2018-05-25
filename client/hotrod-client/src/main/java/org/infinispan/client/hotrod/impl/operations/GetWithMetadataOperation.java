@@ -58,7 +58,7 @@ public class GetWithMetadataOperation<V> extends AbstractKeyOperation<MetadataVa
          if (trace) {
             log.tracef("Received version: %d", (Long) version);
          }
-         V value = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+         V value = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
          result = new MetadataValueImpl<V>(creation, lifespan, lastUsed, maxIdle, version, value);
       }
       return result;

@@ -219,7 +219,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
          if (marshaller == null) {
             Class<? extends Marshaller> clazz = configuration.marshallerClass();
             if (clazz == GenericJBossMarshaller.class && !configuration.serialWhitelist().isEmpty())
-               marshaller = new GenericJBossMarshaller(configuration.serialWhitelist());
+               marshaller = new GenericJBossMarshaller(configuration.getClassWhiteList());
             else
                marshaller = Util.getInstance(clazz);
          }
@@ -235,7 +235,7 @@ public class RemoteCacheManager implements RemoteCacheContainer {
          asyncExecutorService = executorFactory.getExecutor(configuration.asyncExecutorFactory().properties());
       }
 
-      listenerNotifier = ClientListenerNotifier.create(codec, marshaller, transportFactory, configuration.serialWhitelist());
+      listenerNotifier = ClientListenerNotifier.create(codec, marshaller, transportFactory, configuration.getClassWhiteList());
       transportFactory.start(codec, configuration, defaultCacheTopologyId, listenerNotifier,
             asList(listenerNotifier::failoverClientListeners, counterManager));
       counterManager.start(transportFactory, codec, configuration, asyncExecutorService);

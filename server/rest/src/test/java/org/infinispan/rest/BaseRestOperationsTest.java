@@ -1176,15 +1176,15 @@ public abstract class BaseRestOperationsTest extends AbstractInfinispanTest {
       String key = "invalid-xml-key";
       String invalidXML = "foo";
 
-      putInCache("default", key, invalidXML, TEXT_PLAIN_TYPE);
+      putInCache("json", key, invalidXML, TEXT_PLAIN_TYPE);
 
       ContentResponse response = client
-            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "default", key))
+            .newRequest(String.format("http://localhost:%d/rest/%s/%s", restServer.getPort(), "json", key))
             .header(HttpHeader.ACCEPT, APPLICATION_XML_TYPE)
             .method(HttpMethod.GET).send();
 
       ResponseAssertion.assertThat(response).isNotAcceptable();
-      ResponseAssertion.assertThat(response).containsReturnedText("Content cannot be converted to XML");
+      ResponseAssertion.assertThat(response).containsReturnedText("Cannot convert to application/xml");
    }
 
 }

@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.health.Health;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.ClusterExecutor;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.stats.CacheContainerStats;
@@ -133,6 +134,11 @@ public class AbstractDelegatingEmbeddedCacheManager implements EmbeddedCacheMana
    @Override
    public EmbeddedCacheManagerAdmin administration() {
       return cm.administration();
+   }
+
+   @Override
+   public ClassWhiteList getClassWhiteList() {
+      return cm.getClassWhiteList();
    }
 
    @Override

@@ -4,16 +4,17 @@ import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_JSON;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OCTET_STREAM;
 import static org.infinispan.commons.dataconversion.MediaType.TEXT_PLAIN;
-import static org.infinispan.rest.JSONConstants.TYPE;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.JavaType;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.dataconversion.OneToManyTranscoder;
 import org.infinispan.commons.dataconversion.StandardConversions;
@@ -27,22 +28,27 @@ public class JsonTranscoder extends OneToManyTranscoder {
 
    protected final static Log logger = LogFactory.getLog(JsonTranscoder.class, Log.class);
 
-   private final ObjectMapper jsonMapper = new ObjectMapper().setDefaultTyping(
-         new ObjectMapper.DefaultTypeResolverBuilder(ObjectMapper.DefaultTyping.NON_FINAL) {
-            {
-               init(JsonTypeInfo.Id.CLASS, null);
-               inclusion(JsonTypeInfo.As.PROPERTY);
-               typeProperty(TYPE);
-            }
-
-            @Override
-            public boolean useForType(JavaType t) {
-               return !t.isContainerType() && super.useForType(t);
-            }
-         });
+   private final ObjectMapper jsonMapper;
 
    public JsonTranscoder() {
+      this(new ClassWhiteList(Collections.emptyList()));
+   }
+
+   public JsonTranscoder(ClassWhiteList whiteList) {
       super(APPLICATION_JSON, APPLICATION_OBJECT, APPLICATION_OCTET_STREAM, TEXT_PLAIN);
+      this.jsonMapper = new ObjectMapper().setDefaultTyping(
+            new SecureTypeResolverBuilder(ObjectMapper.DefaultTyping.NON_FINAL, whiteList) {
+               {
+                  init(JsonTypeInfo.Id.CLASS, null);
+                  inclusion(JsonTypeInfo.As.PROPERTY);
+                  typeProperty("_type");
+               }
+
+               @Override
+               public boolean useForType(JavaType t) {
+                  return !t.isContainerType() && super.useForType(t);
+               }
+            });
    }
 
    @Override
@@ -62,9 +68,9 @@ public class JsonTranscoder extends OneToManyTranscoder {
          try {
             if (content instanceof byte[]) {
                String contentAsString = new String((byte[]) content, destinationType.getCharset());
-               return jsonMapper.writeValueAsString(contentAsString);
+               return jsonMapper.writeValueAsBytes(contentAsString);
             }
-            return jsonMapper.writeValueAsString(content);
+            return jsonMapper.writeValueAsBytes(content);
          } catch (IOException e) {
             throw new CacheException(e);
          }

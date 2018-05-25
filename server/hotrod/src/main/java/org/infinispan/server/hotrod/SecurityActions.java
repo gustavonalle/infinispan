@@ -4,6 +4,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.infinispan.AdvancedCache;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
@@ -49,6 +50,10 @@ final class SecurityActions {
    static <K, V> org.infinispan.Cache<K, V> getCache(final EmbeddedCacheManager cacheManager, String cacheName) {
       GetCacheAction action = new GetCacheAction(cacheManager, cacheName);
       return (org.infinispan.Cache<K, V>) doPrivileged(action);
+   }
+
+   static ClassWhiteList getDeserializationWhiteList(final EmbeddedCacheManager cacheManager) {
+      return doPrivileged(cacheManager::getClassWhiteList);
    }
 
    static GlobalComponentRegistry getCacheGlobalComponentRegistry(final AdvancedCache<?, ?> cache) {

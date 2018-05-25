@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.api.Lifecycle;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -334,4 +335,6 @@ public interface EmbeddedCacheManager extends CacheContainer, Listenable {
    default EmbeddedCacheManagerAdmin administration() {
       throw new UnsupportedOperationException();
    }
+
+   ClassWhiteList getClassWhiteList();
 }

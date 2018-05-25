@@ -12,6 +12,7 @@ import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.util.Util;
@@ -39,7 +40,7 @@ class SegmentKeyTracker implements KeyTracker {
       segmentStream.forEach(i -> keysPerSegment.set(i, new HashSet<>()));
    }
 
-   public boolean track(byte[] key, short status, List<String> whitelist) {
+   public boolean track(byte[] key, short status, ClassWhiteList whitelist) {
       int segment = HotRodConstants.hasCompatibility(status) ?
               segmentConsistentHash.getSegment(MarshallerUtil.bytes2obj(marshaller, key, status, whitelist)) :
               segmentConsistentHash.getSegment(key);

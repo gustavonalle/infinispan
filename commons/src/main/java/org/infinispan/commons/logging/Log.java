@@ -148,7 +148,7 @@ public interface Log extends BasicLogger {
 
    //----- counters exceptions ------
 
-   @Message(value = "Class '%s' blocked by deserialization white list. Adjust the client configuration serialization white list regular expression to include this class.", id = 28023)
+   @Message(value = "Class '%s' blocked by deserialization white list. Adjust the configuration serialization white list regular expression to include this class.", id = 28023)
    CacheException classNotInWhitelist(String className);
 
    @Message(value = "Invalid media type. Expected '%s' but got '%s'", id = 28024)

@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.iteration.KeyTracker;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
@@ -283,7 +283,7 @@ public class OperationsFactory implements HotRodConstants {
    }
 
    public <K, V> IterationNextOperation newIterationNextOperation(String iterationId, Transport transport, KeyTracker segmentKeyTracker) {
-      return new IterationNextOperation(codec, flags(), cfg, cacheNameBytes, topologyId, iterationId, transport, segmentKeyTracker, cfg.serialWhitelist());
+      return new IterationNextOperation(codec, flags(), cfg, cacheNameBytes, topologyId, iterationId, transport, segmentKeyTracker, cfg.getClassWhiteList());
    }
 
    public <K> GetStreamOperation newGetStreamOperation(K key, byte[] keyBytes, int offset) {

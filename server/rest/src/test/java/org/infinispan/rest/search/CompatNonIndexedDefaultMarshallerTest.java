@@ -22,6 +22,14 @@ public class CompatNonIndexedDefaultMarshallerTest extends BaseRestSearchTest {
    }
 
    @Override
+   protected void createCacheManagers() {
+      super.createCacheManagers();
+      cacheManagers.forEach(cm -> {
+         cm.getClassWhiteList().addRegexps("org.infinispan.rest.search.entity.*");
+      });
+   }
+
+   @Override
    protected void registerProtobuf(String protoFileName, String protoFileContents) throws Exception {
       // Not needed
    }

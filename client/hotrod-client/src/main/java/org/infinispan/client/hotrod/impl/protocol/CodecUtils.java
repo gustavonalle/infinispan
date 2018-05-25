@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 
 /**
@@ -32,7 +33,7 @@ public final class CodecUtils {
       return seconds;
    }
 
-   static <T> T readUnmarshallByteArray(Transport transport, short status, List<String> whitelist) {
+   static <T> T readUnmarshallByteArray(Transport transport, short status, ClassWhiteList whitelist) {
       byte[] bytes = transport.readArray();
       Marshaller marshaller = transport.getTransportFactory().getMarshaller();
       return MarshallerUtil.bytes2obj(marshaller, bytes, status, whitelist);

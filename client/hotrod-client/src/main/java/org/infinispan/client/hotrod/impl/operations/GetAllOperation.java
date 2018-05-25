@@ -45,8 +45,8 @@ public class GetAllOperation<K, V> extends RetryOnFailureOperation<Map<K, V>> {
       int size = transport.readVInt();
       Map<K, V> result = new HashMap<K, V>(size);
       for (int i = 0; i < size; ++i) {
-         K key = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
-         V value = codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+         K key = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
+         V value = codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
          result.put(key, value);
       }
       return result;

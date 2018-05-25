@@ -48,7 +48,7 @@ public class ExecuteOperation<T> extends RetryOnFailureOperation<T> {
       }
       transport.flush();
       short status = readHeaderAndValidate(transport, params);
-      return codec.readUnmarshallByteArray(transport, status, cfg.serialWhitelist());
+      return codec.readUnmarshallByteArray(transport, status, cfg.getClassWhiteList());
    }
 
 }

@@ -16,6 +16,7 @@ import org.infinispan.client.hotrod.event.ClientEvent;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.logging.Log;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.Either;
@@ -51,11 +52,11 @@ public interface Codec {
     */
    short readHeader(Transport transport, HeaderParams params);
 
-   ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist);
+   ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist);
 
-   Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist);
+   Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist);
 
-   Object returnPossiblePrevValue(Transport transport, short status, int flags, List<String> whitelist);
+   Object returnPossiblePrevValue(Transport transport, short status, int flags, ClassWhiteList whitelist);
 
    /**
     * Logger for Hot Rod client codec
@@ -65,7 +66,7 @@ public interface Codec {
    /**
     * Read and unmarshall byte array.
     */
-   <T> T readUnmarshallByteArray(Transport transport, short status, List<String> whitelist);
+   <T> T readUnmarshallByteArray(Transport transport, short status, ClassWhiteList whitelist);
 
    /**
     * Reads a stream of data

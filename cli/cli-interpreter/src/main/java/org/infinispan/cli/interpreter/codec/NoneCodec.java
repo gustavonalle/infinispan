@@ -1,5 +1,6 @@
 package org.infinispan.cli.interpreter.codec;
 
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.kohsuke.MetaInfServices;
 /**
  *
@@ -15,6 +16,10 @@ public class NoneCodec extends AbstractCodec {
    @Override
    public String getName() {
       return "none";
+   }
+
+   @Override
+   public void setWhiteList(ClassWhiteList whiteList) {
    }
 
    @Override

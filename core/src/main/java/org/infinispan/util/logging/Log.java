@@ -1671,4 +1671,10 @@ public interface Log extends BasicLogger {
    @LogMessage(level = DEBUG)
    @Message(value = "Conflict resolution cancelled for cache %s with topology %s", id = 525)
    void cancelledConflictResolution(String cacheName, CacheTopology currentTopology);
+
+   @Message(value = "Class '%s' blocked by deserialization white list. Include the class name in the server cache manager white list to authorize.", id = 526)
+   CacheException errorDeserializing(String className);
+
+   @Message(value = "Invalid classes supplied in the whitelist: %s", id = 527)
+   CacheConfigurationException invalidWhiteListClasses(String classes);
 }

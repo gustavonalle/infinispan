@@ -66,7 +66,7 @@ public class Interpreter {
 
    @Start
    public void start() {
-      this.codecRegistry = new CodecRegistry(cacheManager.getCacheManagerConfiguration().classLoader());
+      this.codecRegistry = new CodecRegistry(cacheManager);
       this.executor = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "Interpreter"));
       sessionReaperTask = executor.scheduleWithFixedDelay(new ScheduledTask(), sessionReaperWakeupInterval, sessionReaperWakeupInterval, TimeUnit.MILLISECONDS);
    }

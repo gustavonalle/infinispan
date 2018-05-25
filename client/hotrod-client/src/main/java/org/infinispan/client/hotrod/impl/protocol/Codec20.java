@@ -36,6 +36,7 @@ import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.Closeables;
@@ -65,7 +66,7 @@ public class Codec20 implements Codec, HotRodConstants {
    }
 
    @Override
-   public <T> T readUnmarshallByteArray(Transport transport, short status, List<String> whitelist) {
+   public <T> T readUnmarshallByteArray(Transport transport, short status, ClassWhiteList whitelist) {
       return CodecUtils.readUnmarshallByteArray(transport, status, whitelist);
    }
 
@@ -178,7 +179,7 @@ public class Codec20 implements Codec, HotRodConstants {
    }
 
    @Override
-   public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist) {
+   public ClientEvent readEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist) {
       readMagic(transport);
       readMessageId(transport, null);
       short eventTypeId = transport.readByte();
@@ -227,7 +228,7 @@ public class Codec20 implements Codec, HotRodConstants {
       return Closeables.iterator(keys.iterator());
    }
 
-   protected ClientEvent readPartialEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, short eventTypeId, List<String> whitelist) {
+   protected ClientEvent readPartialEvent(Transport transport, byte[] expectedListenerId, Marshaller marshaller, short eventTypeId, ClassWhiteList whitelist) {
       short status = transport.readByte();
       transport.readByte(); // ignore, no topology expected
       ClientEvent.Type eventType;
@@ -278,7 +279,7 @@ public class Codec20 implements Codec, HotRodConstants {
    }
 
    @Override
-   public Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, List<String> whitelist) {
+   public Either<Short, ClientEvent> readHeaderOrEvent(Transport transport, HeaderParams params, byte[] expectedListenerId, Marshaller marshaller, ClassWhiteList whitelist) {
       readMagic(transport);
       readMessageId(transport, null);
       short opCode = transport.readByte();
@@ -294,7 +295,7 @@ public class Codec20 implements Codec, HotRodConstants {
    }
 
    @Override
-   public Object returnPossiblePrevValue(Transport transport, short status, int flags, List<String> whitelist) {
+   public Object returnPossiblePrevValue(Transport transport, short status, int flags, ClassWhiteList whitelist) {
       Marshaller marshaller = transport.getTransportFactory().getMarshaller();
       if (HotRodConstants.hasPrevious(status)) {
          byte[] bytes = transport.readArray();

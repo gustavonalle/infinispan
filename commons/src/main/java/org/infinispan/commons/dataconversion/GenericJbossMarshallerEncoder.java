@@ -1,5 +1,6 @@
 package org.infinispan.commons.dataconversion;
 
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 
 /**
@@ -7,14 +8,8 @@ import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
  */
 public class GenericJbossMarshallerEncoder extends MarshallerEncoder {
 
-   public static final GenericJbossMarshallerEncoder INSTANCE = new GenericJbossMarshallerEncoder();
-
-   private GenericJbossMarshallerEncoder() {
-      this(GenericJbossMarshallerEncoder.class.getClassLoader());
-   }
-
-   public GenericJbossMarshallerEncoder(ClassLoader classLoader) {
-      super(new GenericJBossMarshaller(classLoader));
+   public GenericJbossMarshallerEncoder(ClassWhiteList classWhiteList, ClassLoader classLoader) {
+      super(new GenericJBossMarshaller(classLoader, classWhiteList));
    }
 
    @Override

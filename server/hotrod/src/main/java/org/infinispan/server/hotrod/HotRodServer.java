@@ -31,6 +31,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.IllegalLifecycleStateException;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -97,6 +98,7 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
    private static final Log log = LogFactory.getLog(HotRodServer.class, Log.class);
 
    private static final String WORKER_THREADS_SYS_PROP = "infinispan.server.hotrod.workerThreads";
+   private ClassWhiteList classWhiteList;
 
    public HotRodServer() {
       super("HotRod");
@@ -151,6 +153,10 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
       return new HotRodDecoder(cacheManager, transport, this, this::isCacheIgnored);
    }
 
+   public ClassWhiteList getClassWhiteList() {
+      return classWhiteList;
+   }
+
    /**
     * Class used to create to empty filter converters that ignores marshalling of keys and values
     */
@@ -200,7 +206,8 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
       // These are also initialized by super.startInternal, but we need them before
       this.configuration = configuration;
       this.cacheManager = cacheManager;
-      this.iterationManager = new DefaultIterationManager(cacheManager);
+      this.classWhiteList = SecurityActions.getDeserializationWhiteList(cacheManager);
+      this.iterationManager = new DefaultIterationManager(cacheManager, classWhiteList);
 
       // populate the sasl factories based on the required mechs
       setupSasl();
@@ -208,7 +215,7 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
       // Initialize query-specific stuff
       List<QueryFacade> queryFacades = loadQueryFacades();
       queryFacade = queryFacades.size() > 0 ? queryFacades.get(0) : null;
-      clientListenerRegistry = new ClientListenerRegistry(configuration);
+      clientListenerRegistry = new ClientListenerRegistry(configuration, classWhiteList);
 
       clientCounterNotificationManager = new ClientCounterManagerNotificationManager(asCounterManager(cacheManager));
 
@@ -412,7 +419,7 @@ public class HotRodServer extends AbstractProtocolServer<HotRodServerConfigurati
    void tryRegisterMigrationManager(String cacheName, AdvancedCache<byte[], byte[]> cache) {
       ComponentRegistry cr = SecurityActions.getCacheComponentRegistry(cache.getAdvancedCache());
       RollingUpgradeManager migrationManager = cr.getComponent(RollingUpgradeManager.class);
-      if (migrationManager != null) migrationManager.addSourceMigrator(new HotRodSourceMigrator(cache));
+      if (migrationManager != null) migrationManager.addSourceMigrator(new HotRodSourceMigrator(cache, classWhiteList));
    }
 
    private void setupSasl() {

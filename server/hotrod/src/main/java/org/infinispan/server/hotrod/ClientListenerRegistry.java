@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -65,9 +66,11 @@ import io.netty.channel.Channel;
  */
 class ClientListenerRegistry {
    private final HotRodServerConfiguration configuration;
+   private final ClassWhiteList classWhiteList;
 
-   ClientListenerRegistry(HotRodServerConfiguration configuration) {
+   ClientListenerRegistry(HotRodServerConfiguration configuration, ClassWhiteList classWhiteList) {
       this.configuration = configuration;
+      this.classWhiteList = classWhiteList;
    }
 
    private final static Log log = LogFactory.getLog(ClientListenerRegistry.class, Log.class);
@@ -228,7 +231,7 @@ class ClientListenerRegistry {
    KeyValuePair<CacheEventConverterFactory, Marshaller> findConverterFactory(String name, boolean compatEnabled,
                                                                              ConcurrentMap<String, CacheEventConverterFactory> factories, String factoryType, boolean useRawData) {
       if (name.equals("___eager-key-value-version-converter"))
-         return new KeyValuePair<>(KeyValueVersionConverterFactory.SINGLETON, new GenericJBossMarshaller());
+         return new KeyValuePair<>(KeyValueVersionConverterFactory.SINGLETON, new GenericJBossMarshaller(classWhiteList));
       else
          return findFactory(name, compatEnabled, factories, factoryType, useRawData);
    }
@@ -239,7 +242,7 @@ class ClientListenerRegistry {
       T factory = factories.get(name);
       if (factory == null) throw log.missingCacheEventFactory(factoryType, name);
 
-      Marshaller m = marshaller.orElse(new GenericJBossMarshaller(factory.getClass().getClassLoader()));
+      Marshaller m = marshaller.orElse(new GenericJBossMarshaller(factory.getClass().getClassLoader(), classWhiteList));
       if (useRawData || compatEnabled)
          return new KeyValuePair<>(factory, m);
       else

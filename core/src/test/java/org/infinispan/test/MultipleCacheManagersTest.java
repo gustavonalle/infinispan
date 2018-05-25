@@ -303,13 +303,13 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,
+                                                            GlobalConfigurationBuilder globalConfigurationBuilder,
                                                             ConfigurationBuilder defaultConfigBuilder,
                                                             boolean serverMode, String... cacheNames) {
       List<Cache<K, V>> caches = new ArrayList<>(numMembersInCluster);
       for (int i = 0; i < numMembersInCluster; i++) {
          EmbeddedCacheManager cm;
          if (serverMode) {
-            GlobalConfigurationBuilder globalConfigurationBuilder = new GlobalConfigurationBuilder();
             globalConfigurationBuilder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
             globalConfigurationBuilder.transport().defaultTransport();
             cm = addClusterEnabledCacheManager(globalConfigurationBuilder, defaultConfigBuilder);
@@ -328,6 +328,12 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
       }
       waitForClusterToForm(cacheNames);
       return caches;
+   }
+
+   protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,
+                                                            ConfigurationBuilder defaultConfigBuilder,
+                                                            boolean serverMode, String... cacheNames) {
+      return createClusteredCaches(numMembersInCluster, new GlobalConfigurationBuilder(), defaultConfigBuilder, serverMode, cacheNames);
    }
 
    protected <K, V> List<Cache<K, V>> createClusteredCaches(int numMembersInCluster,

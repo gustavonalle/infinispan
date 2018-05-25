@@ -16,6 +16,7 @@ import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.client.hotrod.marshall.MarshallerUtil;
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.commons.marshall.Marshaller;
 
 /**
@@ -28,12 +29,12 @@ public class IterationNextOperation<E> extends HotRodOperation {
 
    private final String iterationId;
    private final Transport transport;
-   private final List<String> whitelist;
+   private final ClassWhiteList whitelist;
    private final KeyTracker segmentKeyTracker;
 
    protected IterationNextOperation(Codec codec, int flags, Configuration cfg, byte[] cacheName,
                                     AtomicInteger topologyId, String iterationId, Transport transport,
-                                    KeyTracker segmentKeyTracker, List<String> whitelist) {
+                                    KeyTracker segmentKeyTracker, ClassWhiteList whitelist) {
       super(codec, flags, cfg, cacheName, topologyId);
       this.iterationId = iterationId;
       this.transport = transport;

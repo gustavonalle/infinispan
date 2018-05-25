@@ -2,9 +2,11 @@ package org.infinispan.rest;
 
 import static org.infinispan.server.core.ExternalizerIds.MIME_METADATA;
 
+import org.infinispan.commons.configuration.ClassWhiteList;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.lifecycle.AbstractModuleLifecycle;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.EncoderRegistry;
 import org.infinispan.rest.dataconversion.JBossMarshallingTranscoder;
 import org.infinispan.rest.dataconversion.JavaSerializationTranscoder;
@@ -26,9 +28,10 @@ public class LifecycleCallbacks extends AbstractModuleLifecycle {
       globalConfiguration.serialization().advancedExternalizers().put(
             MIME_METADATA, new MimeMetadata.Externalizer());
       EncoderRegistry encoderRegistry = gcr.getComponent(EncoderRegistry.class);
-      encoderRegistry.registerTranscoder(new XMLTranscoder());
-      encoderRegistry.registerTranscoder(new JsonTranscoder());
-      encoderRegistry.registerTranscoder(new JavaSerializationTranscoder());
+      ClassWhiteList classWhiteList = gcr.getComponent(EmbeddedCacheManager.class).getClassWhiteList();
+      encoderRegistry.registerTranscoder(new XMLTranscoder(classWhiteList));
+      encoderRegistry.registerTranscoder(new JsonTranscoder(classWhiteList));
+      encoderRegistry.registerTranscoder(new JavaSerializationTranscoder(classWhiteList));
       encoderRegistry.registerTranscoder(new JBossMarshallingTranscoder(encoderRegistry));
    }
 }

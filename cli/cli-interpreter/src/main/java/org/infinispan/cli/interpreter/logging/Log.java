@@ -127,4 +127,7 @@ public interface Log extends org.infinispan.util.logging.Log {
 
    @Message(value = "The cache '%s' has no backups configured.", id = 19033)
    StatementException noBackupsForCache(String cacheName);
+
+   @Message(value = "Cannot create marshaller, white list not found", id = 19034)
+   IllegalStateException whiteListNotFound();
 }
