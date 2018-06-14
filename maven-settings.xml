@@ -11,7 +11,7 @@
         <id>jdg7-mirror-setting</id>
         <mirrorOf>*,!mead-jdg7,!mead-jdg7-plugins,!jdg7-snapshots</mirrorOf>
         <name>Mirror Settings for JDG 7 build</name>
-        <url>http://host-8-240-249.host.centralci.eng.rdu2.redhat.com:8081/nexus/content/repositories/invalid</url>
+        <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-dg-7-rhel-7-build/latest/maven/</url>
       </mirror>
     </mirrors>
 
@@ -72,7 +72,6 @@
 
     <activeProfiles>
         <activeProfile>jdg-mead-repository</activeProfile>
-        <activeProfile>jdg7-snapshots-repository</activeProfile>
     </activeProfiles>
 
 </settings>
