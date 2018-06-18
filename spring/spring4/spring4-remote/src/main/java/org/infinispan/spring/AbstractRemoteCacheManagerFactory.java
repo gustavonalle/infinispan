@@ -198,4 +198,12 @@ public abstract class AbstractRemoteCacheManagerFactory {
    public void setForceReturnValues(final boolean forceReturnValues) {
       this.configurationPropertiesOverrides.setForceReturnValues(forceReturnValues);
    }
+
+   public void setReadTimeout(final long readTimeout) {
+      this.configurationPropertiesOverrides.setReadTimeout(readTimeout);
+   }
+
+   public void setWriteTimeout(final long writeTimeout) {
+      this.configurationPropertiesOverrides.setWriteTimeout(writeTimeout);
+   }
 }
