@@ -20,8 +20,8 @@ import org.springframework.util.Assert;
 public class SpringRemoteCacheManager implements org.springframework.cache.CacheManager {
 
    private final RemoteCacheManager nativeCacheManager;
-   private final long readTimeout;
-   private final long writeTimeout;
+   private volatile long readTimeout;
+   private volatile long writeTimeout;
 
    /**
     * @param nativeCacheManager the underlying cache manager
@@ -68,12 +68,20 @@ public class SpringRemoteCacheManager implements org.springframework.cache.Cache
       return this.nativeCacheManager;
    }
 
-   /**
-    * Returns the readTimeout
-    * @return
-    */
    public long getReadTimeout() {
       return this.readTimeout;
+   }
+
+   public long getWriteTimeout() {
+      return this.readTimeout;
+   }
+
+   public void setReadTimeout(final long readTimeout) {
+      this.readTimeout = readTimeout;
+   }
+
+   public void setWriteTimeout(final long writeTimeout) {
+      this.writeTimeout = writeTimeout;
    }
 
    /**
