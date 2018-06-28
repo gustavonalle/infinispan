@@ -6,21 +6,15 @@ import static org.testng.AssertJUnit.assertEquals;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.eviction.EvictionType;
+import org.infinispan.test.TestingUtil;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
-@Test(groups = "functional", testName = "stats.ClusteredStatsTest")
-public class ClusteredStatsTest extends SingleStatsTest {
+public abstract class ClusteredStatsTest extends SingleStatsTest {
 
    protected final int CLUSTER_SIZE = 3;
    protected ClusterCacheStats stats;
-
-   @Override
-   public Object[] factory() {
-      return new Object[]{
-            new ClusteredStatsTest().withStorage(StorageType.OBJECT),
-            new ClusteredStatsTest().withStorage(StorageType.OFF_HEAP)
-      };
-   }
 
    @Override
    protected void createCacheManagers() throws Throwable {
