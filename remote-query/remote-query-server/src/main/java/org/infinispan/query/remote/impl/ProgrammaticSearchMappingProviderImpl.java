@@ -26,6 +26,13 @@ public final class ProgrammaticSearchMappingProviderImpl implements Programmatic
 
    public static final String INDEX_NAME_SUFFIX = "_protobuf";
 
+   /**
+    * Creates the name of the index given a cache name.
+    */
+   public static String getIndexName(String cacheName) {
+      return cacheName + INDEX_NAME_SUFFIX;
+   }
+
    @Override
    public void defineMappings(Cache cache, SearchMapping searchMapping) {
       if (log.isDebugEnabled()) {
@@ -33,7 +40,7 @@ public final class ProgrammaticSearchMappingProviderImpl implements Programmatic
       }
       searchMapping.entity(ProtobufValueWrapper.class)
             .indexed()
-            .indexName(cache.getName() + INDEX_NAME_SUFFIX)
+            .indexName(getIndexName(cache.getName()))
             .interceptor(ProtobufValueWrapperIndexingInterceptor.class)
             .analyzerDiscriminator(ProtobufValueWrapperAnalyzerDiscriminator.class)
             .classBridgeInstance(new ProtobufValueWrapperFieldBridge(cache))
