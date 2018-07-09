@@ -186,13 +186,13 @@ public class NettyTransport implements Transport {
    }
 
    @Override
-   public String getTotalBytesWritten() {
-      return totalBytesWritten.toString();
+   public long getTotalBytesWritten() {
+      return totalBytesWritten.longValue();
    }
 
    @Override
-   public String getTotalBytesRead() {
-      return totalBytesRead.toString();
+   public long getTotalBytesRead() {
+      return totalBytesRead.longValue();
    }
 
    @Override
@@ -201,42 +201,42 @@ public class NettyTransport implements Transport {
    }
 
    @Override
-   public Integer getPort() {
+   public int getPort() {
       return nettyPort.orElse(address.getPort());
    }
 
    @Override
-   public String getNumberWorkerThreads() {
-      return Integer.toString(configuration.workerThreads());
+   public int getNumberWorkerThreads() {
+      return configuration.workerThreads();
    }
 
    @Override
-   public String getIdleTimeout() {
-      return Integer.toString(configuration.idleTimeout());
+   public int getIdleTimeout() {
+      return configuration.idleTimeout();
    }
 
    @Override
-   public String getTcpNoDelay() {
-      return Boolean.toString(configuration.tcpNoDelay());
+   public boolean getTcpNoDelay() {
+      return configuration.tcpNoDelay();
    }
 
    @Override
-   public String getSendBufferSize() {
-      return Integer.toString(configuration.sendBufSize());
+   public int getSendBufferSize() {
+      return configuration.sendBufSize();
    }
 
    @Override
-   public String getReceiveBufferSize() {
-      return Integer.toString(configuration.recvBufSize());
+   public int getReceiveBufferSize() {
+      return configuration.recvBufSize();
    }
 
    @Override
-   public Integer getNumberOfLocalConnections() {
-      return Integer.valueOf(acceptedChannels.size());
+   public int getNumberOfLocalConnections() {
+      return acceptedChannels.size();
    }
 
    @Override
-   public Integer getNumberOfGlobalConnections() {
+   public int getNumberOfGlobalConnections() {
       if (needDistributedCalculation()) {
          return calculateGlobalConnections();
       } else {
