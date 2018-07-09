@@ -16,8 +16,12 @@ import org.infinispan.topology.CacheTopology;
 import org.infinispan.topology.ClusterCacheStatus;
 import org.infinispan.topology.ClusterTopologyManager;
 import org.infinispan.topology.RebalancingStatus;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 public class BlockingClusterTopologyManager implements ClusterTopologyManager {
+   private static final Log log = LogFactory.getLog(BlockingClusterTopologyManager.class);
+
    private final ClusterTopologyManager delegate;
    private final CopyOnWriteArrayList<Handle<CacheTopology>> topologyUpdates = new CopyOnWriteArrayList<>();
    private final CopyOnWriteArrayList<Handle<Integer>> topologyConfirmations = new CopyOnWriteArrayList<>();
@@ -92,6 +96,7 @@ public class BlockingClusterTopologyManager implements ClusterTopologyManager {
    public void broadcastTopologyUpdate(String cacheName, CacheTopology cacheTopology, AvailabilityMode availabilityMode, boolean totalOrder, boolean distributed) {
       for (Handle<CacheTopology> h : topologyUpdates) {
          if (h.condition.test(cacheTopology)) {
+            log.tracef("Block if needed %s", cacheTopology);
             h.latch.blockIfNeeded();
          }
       }
@@ -158,11 +163,13 @@ public class BlockingClusterTopologyManager implements ClusterTopologyManager {
       }
 
       public void stopBlocking() {
+         log.tracef("Stop blocking");
          latch.stopBlocking();
          topologyUpdates.remove(this);
       }
 
       public void waitToBlock() throws InterruptedException {
+         log.tracef("Waiting to block");
          latch.waitToBlock();
       }
 
