@@ -127,6 +127,9 @@ public class SingleStatsTest extends MultipleCacheManagersTest {
       assertTrue(stats.getAverageReadTime() >= 0);
       assertTrue(stats.getAverageRemoveTime() >= 0);
       assertTrue(stats.getAverageWriteTime() >= 0);
+      assertTrue(stats.getAverageReadTimeNanos() >= 0);
+      assertTrue(stats.getAverageRemoveTimeNanos() >= 0);
+      assertTrue(stats.getAverageWriteTimeNanos() >= 0);
       if (evictionType == EvictionType.COUNT) {
          assertEquals(0, stats.getDataMemoryUsed());
       } else {
