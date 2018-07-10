@@ -76,6 +76,7 @@ public class ClusteredCacheQueryImpl<E> extends CacheQueryImpl<E> {
 
    @Override
    public int getResultSize() {
+      partitionHandlingSupport.checkCacheAvailable();
       int accumulator;
       if (resultSize == null) {
          ClusteredQueryCommand command = ClusteredQueryCommand.getResultSize(queryDefinition, cache);
@@ -96,6 +97,7 @@ public class ClusteredCacheQueryImpl<E> extends CacheQueryImpl<E> {
 
    @Override
    public ResultIterator<E> iterator(FetchOptions fetchOptions) throws SearchException {
+      partitionHandlingSupport.checkCacheAvailable();
       queryDefinition.setMaxResults(getNodeMaxResults());
       switch (fetchOptions.getFetchMode()) {
          case EAGER: {
@@ -146,6 +148,7 @@ public class ClusteredCacheQueryImpl<E> extends CacheQueryImpl<E> {
 
    @Override
    public List<E> list() throws SearchException {
+      partitionHandlingSupport.checkCacheAvailable();
       List<E> values = new ArrayList<>();
       try (ResultIterator<E> iterator = iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER))) {
          while (iterator.hasNext()) {
