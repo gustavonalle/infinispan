@@ -1,0 +1,10 @@
+<subsystem xmlns="urn:infinispan:server:core:8.5">
+    <cache-container name="local" default-cache="default">
+        <modules>
+            <module name="deployment.entities.jar"/>
+        </modules>
+        <local-cache name="default">
+            <compatibility enabled="true"/>
+        </local-cache>
+    </cache-container>
+</subsystem>

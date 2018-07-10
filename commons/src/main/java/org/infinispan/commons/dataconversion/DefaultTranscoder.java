@@ -95,7 +95,7 @@ public final class DefaultTranscoder implements Transcoder {
          return StandardConversions.convertOctetStreamToJava(decoded, destinationType);
       }
       if (contentType.match(APPLICATION_OBJECT)) {
-         return content;
+         return StandardConversions.decodeObjectContent(content, contentType);
       }
       if (contentType.match(TEXT_PLAIN)) {
          return StandardConversions.convertTextToObject(content, contentType);
