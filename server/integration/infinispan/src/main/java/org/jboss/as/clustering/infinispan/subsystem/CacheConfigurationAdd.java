@@ -528,14 +528,14 @@ public abstract class CacheConfigurationAdd extends AbstractAddStepHandler imple
             ModelNode dataTypeNode = cache.get(ModelKeys.ENCODING);
             ModelNode node;
             if ((node = dataTypeNode.get(ModelKeys.KEY)).isDefined()) {
-                final String mediaType = KeyDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
-                ContentTypeConfigurationBuilder keyTypeConfigurationBuilder = builder.encoding().key();
-                keyTypeConfigurationBuilder.mediaType(mediaType);
-
-            } else if ((node = dataTypeNode.get(ModelKeys.VALUE)).isDefined()) {
-                final String mediaType = ValueDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
-                ContentTypeConfigurationBuilder valueTypeConfigurationBuilder = builder.encoding().value();
-                valueTypeConfigurationBuilder.mediaType(mediaType);
+               final String mediaType = KeyDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
+               ContentTypeConfigurationBuilder keyTypeConfigurationBuilder = builder.encoding().key();
+               keyTypeConfigurationBuilder.mediaType(mediaType);
+            }
+            if ((node = dataTypeNode.get(ModelKeys.VALUE)).isDefined()) {
+               final String mediaType = ValueDataTypeConfigurationResource.MEDIA_TYPE.resolveModelAttribute(context, node).asString();
+               ContentTypeConfigurationBuilder valueTypeConfigurationBuilder = builder.encoding().value();
+               valueTypeConfigurationBuilder.mediaType(mediaType);
             }
         }
 
