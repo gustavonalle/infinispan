@@ -17,9 +17,7 @@ import org.infinispan.topology.CacheTopology;
  * @author Mircea.Markus@jboss.com
  * @author Vladimir Blagojevic
  * @author anistor@redhat.com
- * @deprecated Since 8.3, will be removed.
  */
-@Deprecated
 @Scope(Scopes.NAMED_CACHE)
 public interface DistributionManager {
 
@@ -29,7 +27,7 @@ public interface DistributionManager {
     * @return a DataLocality that allows you to test whether a key is mapped to the local node or not, and the degree of
     * certainty of such a result.
     *
-    * @deprecated Since 9.0, please use {@code getCacheTopology().getDistributionInfo(key)} instead.
+    * @deprecated Since 8.3, please use {@code getCacheTopology().getDistributionInfo(key)} instead.
     */
    @Deprecated
    DataLocality getLocality(Object key);
@@ -42,7 +40,7 @@ public interface DistributionManager {
     * @param key key to test
     * @return a list of addresses where the key may reside
     *
-    * @deprecated Since 9.0, please use {@code getCacheTopology().getDistributionInfo(key)} instead.
+    * @deprecated Since 8.3, please use {@code getCacheTopology().getDistributionInfo(key)} instead.
     */
    @Deprecated
    List<Address> locate(Object key);
@@ -63,7 +61,7 @@ public interface DistributionManager {
     *
     * @param keys list of keys to locate
     * @return all the nodes that would need to write a copy of one of the keys.
-    * @deprecated Since 9.0, no direct replacement.
+    * @deprecated Since 8.3, no direct replacement.
     */
    @Deprecated
    Set<Address> locateAll(Collection<Object> keys);
@@ -71,7 +69,7 @@ public interface DistributionManager {
    /**
     * @return the consistent hash used for writing.
     *
-    * @deprecated Since 9.0, please use {@link #getWriteConsistentHash()} instead.
+    * @deprecated Since 8.3, please use {@link #getWriteConsistentHash()} instead.
     */
    @Deprecated
    default ConsistentHash getConsistentHash() {
