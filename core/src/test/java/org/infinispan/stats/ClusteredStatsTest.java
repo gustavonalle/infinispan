@@ -7,14 +7,24 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
-import org.infinispan.test.TestingUtil;
+import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
-public abstract class ClusteredStatsTest extends SingleStatsTest {
+@CleanupAfterMethod
+@Test(groups = "functional", testName = "stats.ClusteredStatsTest")
+public class ClusteredStatsTest extends SingleStatsTest {
 
    protected final int CLUSTER_SIZE = 3;
    protected ClusterCacheStats stats;
+
+   @Factory
+   public Object[] factory() {
+      return new Object[]{
+            new ClusteredStatsTest().withStorage(StorageType.OBJECT).withEvictionType(EvictionType.COUNT),
+            new ClusteredStatsTest().withStorage(StorageType.OFF_HEAP).withEvictionType(EvictionType.COUNT),
+      };
+   }
 
    @Override
    protected void createCacheManagers() throws Throwable {
