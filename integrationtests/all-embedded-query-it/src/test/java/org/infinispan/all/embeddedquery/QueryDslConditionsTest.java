@@ -78,8 +78,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
       cfg.transaction()
             .transactionMode(TransactionMode.TRANSACTIONAL)
-            .indexing()
-            .index(Index.ALL)
+            .indexing().index(Index.ALL)
             .addIndexedEntity(getModelFactory().getUserImplClass())
             .addIndexedEntity(getModelFactory().getAccountImplClass())
             .addIndexedEntity(getModelFactory().getTransactionImplClass())
@@ -87,9 +86,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
             .addProperty("error_handler", "org.infinispan.all.embeddedquery.testdomain.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_CURRENT");
 
-      EmbeddedCacheManager cm = new DefaultCacheManager(gcfg.build(), cfg.build());
-
-      return cm;
+      return new DefaultCacheManager(gcfg.build(), cfg.build());
    }
 
    private static ModelFactory getModelFactory() {
@@ -782,7 +779,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       List<User> list = q.list();
       assertEquals(2, list.size());
       for (User u : list) {
-         assertFalse("Woman".equals(u.getSurname()));
+         assertNotEquals("Woman", u.getSurname());
       }
    }
 
@@ -1735,14 +1732,14 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
    public void testWrongQueryBuilding1() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.not().having("name").eq("John").build();
+      qf.not().having("name").eq("John").build();
    }
 
    @Test(expected = IllegalStateException.class)
    public void testWrongQueryBuilding2() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("name").eq("John")
             .having("surname").eq("Man")
             .build();
@@ -1752,7 +1749,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
    public void testWrongQueryBuilding3() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .not().having("name").eq("John")
             .not().having("surname").eq("Man")
             .build();
@@ -1782,7 +1779,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
    public void testWrongQueryBuilding6() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("gender").eq(null)
             .build();
    }
@@ -1990,7 +1987,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(1, list.get(0).length);
       assertEquals(22L, list.get(0)[0]);
       assertEquals(1, list.get(1).length);
-      assertEquals(null, list.get(1)[0]);
+      assertNull(list.get(1)[0]);
    }
 
    @Test(expected = ParsingException.class)
@@ -2135,7 +2132,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(1, list.get(0).length);
       assertEquals(22L, list.get(0)[0]);
       assertEquals(1, list.get(1).length);
-      assertEquals(null, list.get(1)[0]);
+      assertNull(list.get(1)[0]);
    }
 
    @Test
@@ -2299,7 +2296,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156d, (Double) list.get(0)[1], 0.0001d);
       assertEquals(150d, (Double) list.get(1)[1], 0.0001d);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    @Test
@@ -2377,7 +2374,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156, list.get(0)[1]);
       assertEquals(-12, list.get(1)[1]);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    @Test
@@ -2467,7 +2464,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156, list.get(0)[1]);
       assertEquals(312, list.get(1)[1]);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    @Test
@@ -2781,7 +2778,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
    public void testQueryWithNoParams() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("name").eq("John")
             .build()
             .setParameter("param1", "John");
@@ -2884,7 +2881,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(7893d, (Double) list.get(0)[1], 0.0001d);
       assertEquals(55L, list.get(0)[2]);
       assertEquals(java.util.Date.class, list.get(0)[3].getClass());
-      assertTrue(((Date) list.get(0)[3]).compareTo(makeDate("2013-01-01")) == 0);
+      assertEquals(makeDate("2013-01-01"), list.get(0)[3]);
       assertEquals(2, list.get(0)[4]);
    }
 
@@ -2901,7 +2898,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(1, list.size());
       assertEquals(1, list.get(0).length);
       assertEquals(java.util.Date.class, list.get(0)[0].getClass());
-      assertTrue(((Date) list.get(0)[0]).compareTo(makeDate("2013-02-27")) == 0);
+      assertEquals(makeDate("2013-02-27"), list.get(0)[0]);
    }
 
    @Test
@@ -2918,7 +2915,7 @@ public class QueryDslConditionsTest extends AbstractQueryTest {
       assertEquals(2, list.get(0).length);
       assertEquals(1L, list.get(0)[0]);
       assertEquals(java.util.Date.class, list.get(0)[1].getClass());
-      assertTrue(((Date) list.get(0)[1]).compareTo(makeDate("2013-02-27")) == 0);
+      assertEquals(makeDate("2013-02-27"), list.get(0)[1]);
    }
 
    @Test

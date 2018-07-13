@@ -717,7 +717,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       List<User> list = q.list();
       assertEquals(2, list.size());
       for (User u : list) {
-         assertFalse("Woman".equals(u.getSurname()));
+         assertNotEquals(u.getSurname(), "Woman");
       }
    }
 
@@ -790,7 +790,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       List<User> list = q.list();
       assertEquals(2, list.size());
-      assertNotEquals("Woman", list.get(0).getSurname());
+      assertNotEquals(list.get(0).getSurname(), "Woman");
    }
 
    public void testNot11() {
@@ -804,7 +804,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       List<User> list = q.list();
       assertEquals(2, list.size());
-      assertNotEquals("Woman", list.get(0).getSurname());
+      assertNotEquals(list.get(0).getSurname(), "Woman");
    }
 
    public void testEmptyQuery() {
@@ -1610,14 +1610,14 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testWrongQueryBuilding1() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.not().having("name").eq("John").build();
+      qf.not().having("name").eq("John").build();
    }
 
    @Test(expectedExceptions = IllegalStateException.class)
    public void testWrongQueryBuilding2() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("name").eq("John")
             .having("surname").eq("Man")
             .build();
@@ -1627,7 +1627,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testWrongQueryBuilding3() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .not().having("name").eq("John")
             .not().having("surname").eq("Man")
             .build();
@@ -1637,7 +1637,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testWrongQueryBuilding4() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .not(qf.having("name").eq("John"))
             .not(qf.having("surname").eq("Man"))
             .build();
@@ -1647,7 +1647,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testWrongQueryBuilding5() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .not(qf.having("name").eq("John"))
             .not(qf.having("surname").eq("Man"))
             .build();
@@ -1657,7 +1657,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testWrongQueryBuilding6() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("gender").eq(null)
             .build();
    }
@@ -1853,7 +1853,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(1, list.get(0).length);
       assertEquals(22L, list.get(0)[0]);
       assertEquals(1, list.get(1).length);
-      assertEquals(null, list.get(1)[0]);
+      assertNull(list.get(1)[0]);
    }
 
    @Test(expectedExceptions = ParsingException.class, expectedExceptionsMessageRegExp = "ISPN014026: The expression 'surname' must be part of an aggregate function or it should be included in the GROUP BY clause")
@@ -1992,7 +1992,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(1, list.get(0).length);
       assertEquals(22L, list.get(0)[0]);
       assertEquals(1, list.get(1).length);
-      assertEquals(null, list.get(1)[0]);
+      assertNull(list.get(1)[0]);
    }
 
    public void testEmbeddedSum() {
@@ -2146,7 +2146,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156d, (Double) list.get(0)[1], 0.0001d);
       assertEquals(150d, (Double) list.get(1)[1], 0.0001d);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    public void testGlobalAvg() {
@@ -2219,7 +2219,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156, list.get(0)[1]);
       assertEquals(-12, list.get(1)[1]);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    public void testGlobalMinDouble() {
@@ -2303,7 +2303,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(2, list.get(2).length);
       assertEquals(156, list.get(0)[1]);
       assertEquals(312, list.get(1)[1]);
-      assertEquals(null, list.get(2)[1]);
+      assertNull(list.get(2)[1]);
    }
 
    public void testEmbeddedMaxString() {
@@ -2600,7 +2600,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    public void testQueryWithNoParams() {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(getModelFactory().getUserImplClass())
+      qf.from(getModelFactory().getUserImplClass())
             .having("name").eq("John")
             .build()
             .setParameter("param1", "John");
@@ -2703,7 +2703,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(7893d, (Double) list.get(0)[1], 0.0001d);
       assertEquals(55L, list.get(0)[2]);
       assertEquals(java.util.Date.class, list.get(0)[3].getClass());
-      assertTrue(((Date) list.get(0)[3]).compareTo(makeDate("2013-01-01")) == 0);
+      assertEquals(makeDate("2013-01-01"), list.get(0)[3]);
       assertEquals(2, list.get(0)[4]);
    }
 
@@ -2719,7 +2719,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(1, list.size());
       assertEquals(1, list.get(0).length);
       assertEquals(java.util.Date.class, list.get(0)[0].getClass());
-      assertTrue(((Date) list.get(0)[0]).compareTo(makeDate("2013-02-27")) == 0);
+      assertEquals(makeDate("2013-02-27"), list.get(0)[0]);
    }
 
    public void testAggregateDate() throws Exception {
@@ -2735,7 +2735,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertEquals(2, list.get(0).length);
       assertEquals(1L, list.get(0)[0]);
       assertEquals(java.util.Date.class, list.get(0)[1].getClass());
-      assertTrue(((Date) list.get(0)[1]).compareTo(makeDate("2013-02-27")) == 0);
+      assertEquals(makeDate("2013-02-27"), list.get(0)[1]);
    }
 
    public void testNotIndexedProjection() {
