@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.RoundRobinBalancingStrategy;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
@@ -64,6 +65,9 @@ public class ConfigurationProperties {
          Pattern.compile('^' + ConfigurationProperties.SASL_PROPERTIES_PREFIX + '.');
    public static final String JAVA_SERIAL_WHITELIST = "infinispan.client.hotrod.java_serial_whitelist";
    public static final String BATCH_SIZE = "infinispan.client.hotrod.batch_size";
+   public static final String NEAR_CACHE_MAX_ENTRIES = "infinispan.client.hotrod.near_cache.max_entries";
+   public static final String NEAR_CACHE_MODE = "infinispan.client.hotrod.near_cache.mode";
+   public static final String NEAR_CACHE_NAME_PATTERN = "infinispan.client.hotrod.near_cache.name_pattern";
 
    // defaults
 
@@ -193,6 +197,18 @@ public class ConfigurationProperties {
 
    public int getBatchSize() {
       return props.getIntProperty(BATCH_SIZE, DEFAULT_BATCH_SIZE);
+   }
+
+   public NearCacheMode getNearCacheMode() {
+      return props.getEnumProperty(NEAR_CACHE_MODE, NearCacheMode.class, NearCacheMode.DISABLED, true);
+   }
+
+   public int getNearCacheMaxEntries() {
+      return props.getIntProperty(NEAR_CACHE_MAX_ENTRIES, -1);
+   }
+
+   public Pattern getNearCacheNamePattern() {
+      return (Pattern) props.get(NEAR_CACHE_NAME_PATTERN);
    }
 
    /**
