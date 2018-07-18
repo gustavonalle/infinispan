@@ -20,13 +20,15 @@ public abstract class ProtocolServerConfiguration {
    private final int sendBufSize;
    private final SslConfiguration ssl;
    private final boolean tcpNoDelay;
+   private final boolean tcpKeepAlive;
    private final int workerThreads;
    private final Set<String> ignoredCaches;
    private final boolean startTransport;
    private AdminOperationsHandler adminOperationsHandler;
 
    protected ProtocolServerConfiguration(String defaultCacheName, String name, String host, int port, int idleTimeout,
-                                         int recvBufSize, int sendBufSize, SslConfiguration ssl, boolean tcpNoDelay,
+                                         int recvBufSize, int sendBufSize, SslConfiguration ssl,
+                                         boolean tcpNoDelay, boolean tcpKeepAlive,
                                          int workerThreads, Set<String> ignoredCaches, boolean startTransport,
                                          AdminOperationsHandler adminOperationsHandler) {
       this.defaultCacheName = defaultCacheName;
@@ -38,10 +40,18 @@ public abstract class ProtocolServerConfiguration {
       this.sendBufSize = sendBufSize;
       this.ssl = ssl;
       this.tcpNoDelay = tcpNoDelay;
+      this.tcpKeepAlive = tcpKeepAlive;
       this.workerThreads = workerThreads;
       this.ignoredCaches = ignoredCaches;
       this.startTransport = startTransport;
       this.adminOperationsHandler = adminOperationsHandler;
+   }
+
+   protected ProtocolServerConfiguration(String name, String host, int port, int idleTimeout,
+                                         int recvBufSize, int sendBufSize, SslConfiguration ssl,
+                                         boolean tcpNoDelay, boolean tcpKeepAlive,
+                                         int workerThreads) {
+      this(null, name, host, port, idleTimeout, recvBufSize, sendBufSize, ssl, tcpNoDelay, tcpKeepAlive, workerThreads, null, true, null);
    }
 
    public String defaultCacheName() {
@@ -80,6 +90,10 @@ public abstract class ProtocolServerConfiguration {
       return tcpNoDelay;
    }
 
+   public boolean tcpKeepAlive() {
+      return tcpKeepAlive;
+   }
+
    public int workerThreads() {
       return workerThreads;
    }
@@ -108,6 +122,7 @@ public abstract class ProtocolServerConfiguration {
             ", sendBufSize=" + sendBufSize +
             ", ssl=" + ssl +
             ", tcpNoDelay=" + tcpNoDelay +
+            ", tcpKeepAlive=" + tcpKeepAlive +
             ", workerThreads=" + workerThreads +
             ", ignoredCaches=" + ignoredCaches +
             ", startTransport=" + startTransport +

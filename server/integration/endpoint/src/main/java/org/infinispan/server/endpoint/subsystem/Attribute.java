@@ -65,6 +65,7 @@ public enum Attribute {
     SSL(ModelKeys.SSL),
     STRENGTH(ModelKeys.STRENGTH),
     TCP_NODELAY(ModelKeys.TCP_NODELAY),
+    TCP_KEEPALIVE(ModelKeys.TCP_KEEPALIVE),
     UPDATE_TIMEOUT(ModelKeys.UPDATE_TIMEOUT),
     VALUE(ModelKeys.VALUE),
     VIRTUAL_HOST(ModelKeys.VIRTUAL_HOST),
@@ -75,14 +76,9 @@ public enum Attribute {
     private final String name;
     private final AttributeDefinition definition;
 
-    private Attribute(final String name) {
+    Attribute(final String name) {
         this.name = name;
         this.definition = null;
-    }
-
-    private Attribute(final AttributeDefinition definition) {
-        this.name = definition.getXmlName();
-        this.definition = definition;
     }
 
     /**

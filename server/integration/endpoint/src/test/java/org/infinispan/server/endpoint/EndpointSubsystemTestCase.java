@@ -72,7 +72,8 @@ public class EndpointSubsystemTestCase extends ClusteringSubsystemTest {
       Object[][] data = new Object[][] {
             { "endpoint-7.2.xml", 15, "schema/jboss-infinispan-endpoint_7_2.xsd", null },
             { "endpoint-8.0.xml", 15, "schema/jboss-infinispan-endpoint_8_0.xsd", null },
-            { "endpoint-8.1.xml", 25, "schema/jboss-infinispan-endpoint_8_1.xsd", new String[] { "/subsystem-templates/infinispan-endpoint.xml"} },
+            { "endpoint-8.1.xml", 25, "schema/jboss-infinispan-endpoint_8_1.xsd", null },
+            { "endpoint-8.2.xml", 25, "schema/jboss-infinispan-endpoint_8_2.xsd", new String[] { "/subsystem-templates/infinispan-endpoint.xml"} },
       };
       return Arrays.asList(data);
    }

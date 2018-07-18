@@ -36,6 +36,7 @@ public class ModelKeys {
    public static final String WORKER_THREADS = "worker-threads"; // integer
    public static final String IDLE_TIMEOUT = "idle-timeout"; // integer
    public static final String TCP_NODELAY = "tcp-nodelay"; // boolean
+   public static final String TCP_KEEPALIVE = "tcp-keepalive"; // boolean
    public static final String SEND_BUFFER_SIZE = "send-buffer-size"; // integer
    public static final String RECEIVE_BUFFER_SIZE = "receive-buffer-size"; // integer
    public static final String VIRTUAL_HOST = "virtual-host"; // string
