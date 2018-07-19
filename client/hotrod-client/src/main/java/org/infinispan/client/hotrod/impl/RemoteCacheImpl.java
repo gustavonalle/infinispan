@@ -204,10 +204,21 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
    }
 
    @Override
+   public CompletableFuture<MetadataValue<V>> getWithMetadataAsync(K key) {
+      assertRemoteCacheManagerIsStarted();
+      int flags = operationsFactory.flags();
+      return CompletableFuture.supplyAsync(() -> {
+         if (flags != 0)
+            operationsFactory.setFlags(flags);
+         return getWithMetadata(key);
+      }, executorService);
+   }
+
+   @Override
    public MetadataValue<V> getWithMetadata(K key) {
       assertRemoteCacheManagerIsStarted();
       GetWithMetadataOperation<V> op = operationsFactory.newGetWithMetadataOperation(
-         compatKeyIfNeeded(key), obj2bytes(key, true));
+            compatKeyIfNeeded(key), obj2bytes(key, true));
       return op.execute();
    }
 
