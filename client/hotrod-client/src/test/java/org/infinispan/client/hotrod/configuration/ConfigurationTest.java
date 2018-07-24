@@ -165,16 +165,16 @@ public class ConfigurationTest {
          .balancingStrategy(SomeRequestBalancingStrategy.class)
          .connectionPool()
             .maxActive(100)
-            .maxTotal(150)
             .maxWait(1000)
-            .maxIdle(20)
             .minIdle(10)
+            .minEvictableIdleTime(12000)
             .exhaustedAction(ExhaustedAction.WAIT)
+            .maxIdle(20)
+            .maxTotal(150)
             .numTestsPerEvictionRun(5)
             .testOnBorrow(true)
             .testOnReturn(true)
             .testWhileIdle(false)
-            .minEvictableIdleTime(12000)
             .timeBetweenEvictionRuns(15000)
          .connectionTimeout(100)
          .consistentHashImpl(2, SomeCustomConsistentHashV2.class)
@@ -229,7 +229,7 @@ public class ConfigurationTest {
       p.setProperty("maxWait", "1000");
       p.setProperty("maxIdle", "20");
       p.setProperty("minIdle", "10");
-      p.setProperty("exhaustedAction", "1");
+      p.setProperty("exhaustedAction", ExhaustedAction.WAIT.name());
       p.setProperty("numTestsPerEvictionRun", "5");
       p.setProperty("timeBetweenEvictionRunsMillis", "15000");
       p.setProperty("minEvictableIdleTimeMillis", "12000");
@@ -547,8 +547,8 @@ public class ConfigurationTest {
    }
 
    private static void assertEqualsConfig(Object expected, String propertyName, Configuration cfg) {
-      assertEquals(expected, OPTIONS.get(propertyName).apply(cfg));
-      assertEquals(TYPES.get(expected.getClass()).apply(expected), cfg.properties().get(propertyName));
+      assertEquals(propertyName, expected, OPTIONS.get(propertyName).apply(cfg));
+      assertEquals(propertyName, TYPES.get(expected.getClass()).apply(expected), cfg.properties().get(propertyName));
    }
 
 }

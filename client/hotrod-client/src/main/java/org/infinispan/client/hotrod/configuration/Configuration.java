@@ -217,7 +217,7 @@ public class Configuration {
    }
 
    public Properties properties() {
-      Properties properties = new Properties();
+      TypedProperties properties = new TypedProperties();
       if (asyncExecutorFactory().factoryClass() != null) {
          properties.setProperty(ConfigurationProperties.ASYNC_EXECUTOR_FACTORY, asyncExecutorFactory().factoryClass().getName());
          TypedProperties aefProps = asyncExecutorFactory().properties();
@@ -237,8 +237,8 @@ public class Configuration {
                   consistentHashImpl(version).getName());
          }
       }
-      properties.setProperty(ConfigurationProperties.FORCE_RETURN_VALUES, Boolean.toString(forceReturnValues()));
-      properties.setProperty(ConfigurationProperties.KEY_SIZE_ESTIMATE, Integer.toString(keySizeEstimate()));
+      properties.setProperty(ConfigurationProperties.FORCE_RETURN_VALUES, forceReturnValues());
+      properties.setProperty(ConfigurationProperties.KEY_SIZE_ESTIMATE, keySizeEstimate());
       properties.setProperty(ConfigurationProperties.MARSHALLER, marshallerClass().getName());
       properties.setProperty(ConfigurationProperties.PROTOCOL_VERSION, version().toString());
       properties.setProperty(ConfigurationProperties.SO_TIMEOUT, Integer.toString(socketTimeout()));

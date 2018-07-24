@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -18,7 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
@@ -150,6 +148,12 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheSupport<K, V> {
       assertRemoteCacheManagerIsStarted();
       return CompletableFuture.supplyAsync(() ->
               replaceWithVersion(key, newValue, version, lifespanSeconds, maxIdleSeconds), executorService);
+   }
+
+   public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
+      assertRemoteCacheManagerIsStarted();
+      return CompletableFuture.supplyAsync(() ->
+            replaceWithVersion(key, newValue, version, lifespan, lifespanTimeUnit, maxIdle, maxIdleTimeUnit), executorService);
    }
 
    @Override

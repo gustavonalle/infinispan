@@ -5,12 +5,15 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
+import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.ExhaustedAction;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.RoundRobinBalancingStrategy;
 import org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
+import org.infinispan.commons.util.TypedProperties;
 
 /**
  * Encapsulate all config properties here
@@ -19,65 +22,65 @@ import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
  * @version 4.1
  */
 public class ConfigurationProperties {
-   public static final String TRANSPORT_FACTORY = "infinispan.client.hotrod.transport_factory";
-   public static final String SERVER_LIST = "infinispan.client.hotrod.server_list";
-   public static final String MARSHALLER = "infinispan.client.hotrod.marshaller";
-   public static final String ASYNC_EXECUTOR_FACTORY = "infinispan.client.hotrod.async_executor_factory";
-   public static final String CLIENT_INTELLIGENCE = "infinispan.client.hotrod.client_intelligence";
-   public static final String DEFAULT_EXECUTOR_FACTORY_POOL_SIZE = "infinispan.client.hotrod.default_executor_factory.pool_size";
-   public static final String TCP_NO_DELAY = "infinispan.client.hotrod.tcp_no_delay";
-   public static final String TCP_KEEP_ALIVE = "infinispan.client.hotrod.tcp_keep_alive";
+   private static final String ICH = "infinispan.client.hotrod.";
+   public static final String TRANSPORT_FACTORY = ICH + "transport_factory";
+   public static final String SERVER_LIST = ICH + "server_list";
+   public static final String MARSHALLER = ICH + "marshaller";
+   public static final String ASYNC_EXECUTOR_FACTORY = ICH + "async_executor_factory";
+   public static final String CLIENT_INTELLIGENCE = ICH + "client_intelligence";
+   public static final String DEFAULT_EXECUTOR_FACTORY_POOL_SIZE = ICH + "default_executor_factory.pool_size";
+   public static final String TCP_NO_DELAY = ICH + "tcp_no_delay";
+   public static final String TCP_KEEP_ALIVE = ICH + "tcp_keep_alive";
    @Deprecated
-   public static final String PING_ON_STARTUP = "infinispan.client.hotrod.ping_on_startup";
-   public static final String REQUEST_BALANCING_STRATEGY = "infinispan.client.hotrod.request_balancing_strategy";
-   public static final String KEY_SIZE_ESTIMATE = "infinispan.client.hotrod.key_size_estimate";
-   public static final String VALUE_SIZE_ESTIMATE = "infinispan.client.hotrod.value_size_estimate";
-   public static final String FORCE_RETURN_VALUES = "infinispan.client.hotrod.force_return_values";
-   public static final String HASH_FUNCTION_PREFIX = "infinispan.client.hotrod.hash_function_impl";
-   public static final String DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE = "infinispan.client.hotrod.default_executor_factory.queue_size";
-   public static final String SO_TIMEOUT = "infinispan.client.hotrod.socket_timeout";
-   public static final String CONNECT_TIMEOUT = "infinispan.client.hotrod.connect_timeout";
-   public static final String PROTOCOL_VERSION = "infinispan.client.hotrod.protocol_version";
-   public static final String USE_SSL = "infinispan.client.hotrod.use_ssl";
-   public static final String KEY_STORE_FILE_NAME = "infinispan.client.hotrod.key_store_file_name";
-   public static final String KEY_STORE_TYPE = "infinispan.client.hotrod.key_store_type";
-   public static final String KEY_STORE_PASSWORD = "infinispan.client.hotrod.key_store_password";
-   public static final String SNI_HOST_NAME = "infinispan.client.hotrod.sni_host_name";
-   public static final String KEY_ALIAS = "infinispan.client.hotrod.key_alias";
-   public static final String KEY_STORE_CERTIFICATE_PASSWORD = "infinispan.client.hotrod.key_store_certificate_password";
-   public static final String TRUST_STORE_FILE_NAME = "infinispan.client.hotrod.trust_store_file_name";
-   public static final String TRUST_STORE_PATH = "infinispan.client.hotrod.trust_store_path";
-   public static final String TRUST_STORE_TYPE = "infinispan.client.hotrod.trust_store_type";
-   public static final String TRUST_STORE_PASSWORD = "infinispan.client.hotrod.trust_store_password";
-   public static final String SSL_PROTOCOL = "infinispan.client.hotrod.ssl_protocol";
-   public static final String SSL_CONTEXT = "infinispan.client.hotrod.ssl_context";
-   public static final String MAX_RETRIES = "infinispan.client.hotrod.max_retries";
-   public static final String USE_AUTH = "infinispan.client.hotrod.use_auth";
-   public static final String SASL_MECHANISM = "infinispan.client.hotrod.sasl_mechanism";
-   public static final String AUTH_CALLBACK_HANDLER = "infinispan.client.hotrod.auth_callback_handler";
-   public static final String AUTH_SERVER_NAME = "infinispan.client.hotrod.auth_server_name";
-   public static final String AUTH_USERNAME = "infinispan.client.hotrod.auth_username";
-   public static final String AUTH_PASSWORD = "infinispan.client.hotrod.auth_password";
-   public static final String AUTH_REALM = "infinispan.client.hotrod.auth_realm";
-   public static final String AUTH_CLIENT_SUBJECT = "infinispan.client.hotrod.auth_client_subject";
-   public static final String SASL_PROPERTIES_PREFIX = "infinispan.client.hotrod.sasl_properties";
+   public static final String PING_ON_STARTUP = ICH + "ping_on_startup";
+   public static final String REQUEST_BALANCING_STRATEGY = ICH + "request_balancing_strategy";
+   public static final String KEY_SIZE_ESTIMATE = ICH + "key_size_estimate";
+   public static final String VALUE_SIZE_ESTIMATE = ICH + "value_size_estimate";
+   public static final String FORCE_RETURN_VALUES = ICH + "force_return_values";
+   public static final String HASH_FUNCTION_PREFIX = ICH + "hash_function_impl";
+   public static final String DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE = ICH + "default_executor_factory.queue_size";
+   public static final String SO_TIMEOUT = ICH + "socket_timeout";
+   public static final String CONNECT_TIMEOUT = ICH + "connect_timeout";
+   public static final String PROTOCOL_VERSION = ICH + "protocol_version";
+   public static final String USE_SSL = ICH + "use_ssl";
+   public static final String KEY_STORE_FILE_NAME = ICH + "key_store_file_name";
+   public static final String KEY_STORE_TYPE = ICH + "key_store_type";
+   public static final String KEY_STORE_PASSWORD = ICH + "key_store_password";
+   public static final String SNI_HOST_NAME = ICH + "sni_host_name";
+   public static final String KEY_ALIAS = ICH + "key_alias";
+   public static final String KEY_STORE_CERTIFICATE_PASSWORD = ICH + "key_store_certificate_password";
+   public static final String TRUST_STORE_FILE_NAME = ICH + "trust_store_file_name";
+   public static final String TRUST_STORE_PATH = ICH + "trust_store_path";
+   public static final String TRUST_STORE_TYPE = ICH + "trust_store_type";
+   public static final String TRUST_STORE_PASSWORD = ICH + "trust_store_password";
+   public static final String SSL_PROTOCOL = ICH + "ssl_protocol";
+   public static final String SSL_CONTEXT = ICH + "ssl_context";
+   public static final String MAX_RETRIES = ICH + "max_retries";
+   public static final String USE_AUTH = ICH + "use_auth";
+   public static final String SASL_MECHANISM = ICH + "sasl_mechanism";
+   public static final String AUTH_CALLBACK_HANDLER = ICH + "auth_callback_handler";
+   public static final String AUTH_SERVER_NAME = ICH + "auth_server_name";
+   public static final String AUTH_USERNAME = ICH + "auth_username";
+   public static final String AUTH_PASSWORD = ICH + "auth_password";
+   public static final String AUTH_REALM = ICH + "auth_realm";
+   public static final String AUTH_CLIENT_SUBJECT = ICH + "auth_client_subject";
+   public static final String SASL_PROPERTIES_PREFIX = ICH + "sasl_properties";
    public static final Pattern SASL_PROPERTIES_PREFIX_REGEX =
          Pattern.compile('^' + ConfigurationProperties.SASL_PROPERTIES_PREFIX + '.');
-   public static final String JAVA_SERIAL_WHITELIST = "infinispan.client.hotrod.java_serial_whitelist";
-   public static final String BATCH_SIZE = "infinispan.client.hotrod.batch_size";
-   public static final String NEAR_CACHE_MAX_ENTRIES = "infinispan.client.hotrod.near_cache.max_entries";
-   public static final String NEAR_CACHE_MODE = "infinispan.client.hotrod.near_cache.mode";
-   public static final String NEAR_CACHE_NAME_PATTERN = "infinispan.client.hotrod.near_cache.name_pattern";
+   public static final String JAVA_SERIAL_WHITELIST = ICH + "java_serial_whitelist";
+   public static final String BATCH_SIZE = ICH + "batch_size";
+   public static final String NEAR_CACHE_MAX_ENTRIES = ICH + "near_cache.max_entries";
+   public static final String NEAR_CACHE_MODE = ICH + "near_cache.mode";
+   public static final String NEAR_CACHE_NAME_PATTERN = ICH + "near_cache.name_pattern";
 
    // defaults
-
    public static final int DEFAULT_KEY_SIZE = 64;
    public static final int DEFAULT_VALUE_SIZE = 512;
    public static final int DEFAULT_HOTROD_PORT = 11222;
-   public static final int DEFAULT_SO_TIMEOUT = 60000;
-   public static final int DEFAULT_CONNECT_TIMEOUT = 60000;
+   public static final int DEFAULT_SO_TIMEOUT = 60_000;
+   public static final int DEFAULT_CONNECT_TIMEOUT = 60_000;
    public static final int DEFAULT_MAX_RETRIES = 10;
-   public static final int DEFAULT_BATCH_SIZE = 10000;
+   public static final int DEFAULT_BATCH_SIZE = 10_000;
 
    private final TypedProperties props;
 
@@ -88,11 +91,15 @@ public class ConfigurationProperties {
 
    public ConfigurationProperties(String serverList) {
       this();
-      props.setProperty(SERVER_LIST, serverList);
+      setServerList(serverList);
    }
 
    public ConfigurationProperties(Properties props) {
       this.props = props == null ? new TypedProperties() : TypedProperties.toTypedProperties(props);
+   }
+
+   public void setServerList(String serverList) {
+      props.setProperty(SERVER_LIST, serverList);
    }
 
    public String getTransportFactory() {
@@ -101,6 +108,10 @@ public class ConfigurationProperties {
 
    public String getMarshaller() {
       return props.getProperty(MARSHALLER, GenericJBossMarshaller.class.getName());
+   }
+
+   public void setMarshaller(String marshaller) {
+      props.setProperty(MARSHALLER, marshaller);
    }
 
    public String getAsyncExecutorFactory() {
@@ -115,12 +126,24 @@ public class ConfigurationProperties {
       return props.getIntProperty(DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE, 10000);
    }
 
+   public void setDefaultExecutorFactoryPoolSize(int poolSize) {
+      props.setProperty(DEFAULT_EXECUTOR_FACTORY_POOL_SIZE, poolSize);
+   }
+
    public boolean getTcpNoDelay() {
       return props.getBooleanProperty(TCP_NO_DELAY, true);
    }
 
+   public void setTcpNoDelay(boolean tcpNoDelay) {
+      props.setProperty(TCP_NO_DELAY, tcpNoDelay);
+   }
+
    public boolean getTcpKeepAlive() {
       return props.getBooleanProperty(TCP_KEEP_ALIVE, false);
+   }
+
+   public void setTcpKeepAlive(boolean tcpKeepAlive) {
+      props.setProperty(TCP_KEEP_ALIVE, tcpKeepAlive);
    }
 
    public String getRequestBalancingStrategy() {
@@ -131,12 +154,24 @@ public class ConfigurationProperties {
       return props.getIntProperty(KEY_SIZE_ESTIMATE, DEFAULT_KEY_SIZE);
    }
 
+   public void setKeySizeEstimate(int keySizeEstimate) {
+      props.setProperty(KEY_SIZE_ESTIMATE, keySizeEstimate);
+   }
+
    public int getValueSizeEstimate() {
       return props.getIntProperty(VALUE_SIZE_ESTIMATE, DEFAULT_VALUE_SIZE);
    }
 
+   public void setValueSizeEstimate(int valueSizeEstimate) {
+      props.setProperty(VALUE_SIZE_ESTIMATE, valueSizeEstimate);
+   }
+
    public boolean getForceReturnValues() {
       return props.getBooleanProperty(FORCE_RETURN_VALUES, false);
+   }
+
+   public void setForceReturnValues(boolean forceReturnValues) {
+      props.setProperty(FORCE_RETURN_VALUES, forceReturnValues);
    }
 
    public Properties getProperties() {
@@ -147,68 +182,196 @@ public class ConfigurationProperties {
       return props.getIntProperty(SO_TIMEOUT, DEFAULT_SO_TIMEOUT);
    }
 
+   public void setSocketTimeout(int socketTimeout) {
+      props.setProperty(SO_TIMEOUT, socketTimeout);
+   }
+
    public String getProtocolVersion() {
       return props.getProperty(PROTOCOL_VERSION, ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString());
+   }
+
+   public void setProtocolVersion(String protocolVersion) {
+      props.setProperty(PROTOCOL_VERSION, protocolVersion);
+   }
+
+   public String getClientIntelligence() {
+      return props.getProperty(CLIENT_INTELLIGENCE, ClientIntelligence.getDefault().name());
+   }
+
+   public void setClientIntelligence(String clientIntelligence) {
+      props.setProperty(CLIENT_INTELLIGENCE, clientIntelligence);
    }
 
    public int getConnectTimeout() {
       return props.getIntProperty(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
    }
 
+   public void setConnectTimeout(int connectTimeout) {
+      props.setProperty(CONNECT_TIMEOUT, connectTimeout);
+   }
+
    public boolean getUseSSL() {
       return props.getBooleanProperty(USE_SSL, false);
    }
 
+   public void setUseSSL(boolean useSSL) {
+      props.setProperty(USE_SSL, useSSL);
+   }
+
    public String getKeyStoreFileName() {
-      return props.getProperty(KEY_STORE_FILE_NAME, null);
+      return props.getProperty(KEY_STORE_FILE_NAME);
+   }
+
+   public void setKeyStoreFileName(String keyStoreFileName) {
+      props.setProperty(KEY_STORE_FILE_NAME, keyStoreFileName);
    }
 
    public String getKeyStoreType() {
-      return props.getProperty(KEY_STORE_TYPE, null);
+      return props.getProperty(KEY_STORE_TYPE);
+   }
+
+   public void setKeyStoreType(String keyStoreType) {
+      props.setProperty(KEY_STORE_TYPE, keyStoreType);
    }
 
    public String getKeyStorePassword() {
-      return props.getProperty(KEY_STORE_PASSWORD, null);
+      return props.getProperty(KEY_STORE_PASSWORD);
+   }
+
+   public void setKeyStorePassword(String keyStorePassword) {
+      props.setProperty(KEY_STORE_PASSWORD, keyStorePassword);
    }
 
    public String getKeyAlias() {
-      return props.getProperty(KEY_ALIAS, null);
+      return props.getProperty(KEY_ALIAS);
+   }
+
+   public void setKeyAlias(String keyAlias) {
+      props.setProperty(KEY_ALIAS, keyAlias);
    }
 
    public String getTrustStoreFileName() {
-      return props.getProperty(TRUST_STORE_FILE_NAME, null);
+      return props.getProperty(TRUST_STORE_FILE_NAME);
+   }
+
+   public void setTrustStoreFileName(String trustStoreFileName) {
+      props.setProperty(TRUST_STORE_FILE_NAME, trustStoreFileName);
    }
 
    public String getTrustStoreType() {
-      return props.getProperty(TRUST_STORE_TYPE, null);
+      return props.getProperty(TRUST_STORE_TYPE);
+   }
+
+   public void setTrustStoreType(String trustStoreType) {
+      props.setProperty(TRUST_STORE_TYPE, trustStoreType);
    }
 
    public String getTrustStorePassword() {
-      return props.getProperty(TRUST_STORE_PASSWORD, null);
+      return props.getProperty(TRUST_STORE_PASSWORD);
+   }
+
+   public void setTrustStorePassword(String trustStorePassword) {
+      props.setProperty(TRUST_STORE_PASSWORD, trustStorePassword);
+   }
+
+   public String getTrustStorePath() {
+      return props.getProperty(TRUST_STORE_PATH);
+   }
+
+   public void setTrustStorePath(String trustStorePath) {
+      props.setProperty(TRUST_STORE_PATH, trustStorePath);
    }
 
    public String getSSLProtocol() {
-      return props.getProperty(SSL_PROTOCOL, null);
+      return props.getProperty(SSL_PROTOCOL);
+   }
+
+   public String getSniHostName() {
+      return props.getProperty(SNI_HOST_NAME);
+   }
+
+   public void setSniHostName(String sniHostName) {
+      props.setProperty(SNI_HOST_NAME, sniHostName);
+   }
+
+   public boolean getUseAuth() {
+      return props.getBooleanProperty(USE_AUTH, false);
+   }
+
+   public void setUseAuth(boolean useAuth) {
+      props.setProperty(USE_AUTH, useAuth);
+   }
+
+   public String getSaslMechanism() {
+      return props.getProperty(SASL_MECHANISM);
+   }
+
+   public void setSaslMechanism(String saslMechanism) {
+      props.setProperty(SASL_MECHANISM, saslMechanism);
+   }
+
+   public String getAuthUsername() {
+      return props.getProperty(AUTH_USERNAME);
+   }
+
+   public void setAuthUsername(String authUsername) {
+      props.setProperty(AUTH_USERNAME, authUsername);
+   }
+
+   public String getAuthPassword() {
+      return props.getProperty(AUTH_PASSWORD);
+   }
+
+   public void setAuthPassword(String authPassword) {
+      props.setProperty(AUTH_PASSWORD, authPassword);
+   }
+
+   public String getAuthRealm() {
+      return props.getProperty(AUTH_REALM);
+   }
+
+   public void setAuthRealm(String authRealm) {
+      props.setProperty(AUTH_REALM, authRealm);
    }
 
    public int getMaxRetries() {
       return props.getIntProperty(MAX_RETRIES, DEFAULT_MAX_RETRIES);
    }
 
+   public void setMaxRetries(int maxRetries) {
+      props.setProperty(MAX_RETRIES, maxRetries);
+   }
+
    public int getBatchSize() {
       return props.getIntProperty(BATCH_SIZE, DEFAULT_BATCH_SIZE);
+   }
+
+   public void setBatchSize(int batchSize) {
+      props.setProperty(BATCH_SIZE, batchSize);
    }
 
    public NearCacheMode getNearCacheMode() {
       return props.getEnumProperty(NEAR_CACHE_MODE, NearCacheMode.class, NearCacheMode.DISABLED, true);
    }
 
+   public void setNearCacheMode(String nearCacheMode) {
+      props.setProperty(NEAR_CACHE_MODE, nearCacheMode);
+   }
+
    public int getNearCacheMaxEntries() {
       return props.getIntProperty(NEAR_CACHE_MAX_ENTRIES, -1);
    }
 
-   public Pattern getNearCacheNamePattern() {
-      return (Pattern) props.get(NEAR_CACHE_NAME_PATTERN);
+   public void setNearCacheMaxEntries(int nearCacheMaxEntries) {
+      props.setProperty(NEAR_CACHE_MAX_ENTRIES, nearCacheMaxEntries);
+   }
+
+   public String getNearCacheNamePattern() {
+      return props.getProperty(NEAR_CACHE_NAME_PATTERN);
+   }
+
+   public void setNearCacheNamePattern(String nearCacheNamePattern) {
+      props.setProperty(NEAR_CACHE_NAME_PATTERN, nearCacheNamePattern);
    }
 
    /**
