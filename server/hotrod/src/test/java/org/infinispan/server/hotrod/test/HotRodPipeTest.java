@@ -53,8 +53,8 @@ public class HotRodPipeTest extends SingleCacheManagerTest {
    @AfterClass(alwaysRun = true)
    public void destroyAfterClass() {
       log.debug("Test finished, close cache and Hot Rod server");
-      super.destroyAfterClass();
       killServer(server);
+      super.destroyAfterClass();
    }
 
    public void testPipeRequests() {

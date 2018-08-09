@@ -32,6 +32,7 @@ import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
@@ -321,21 +322,23 @@ public class HotRodTestingUtils {
       assertEquals(hashTopologyResp.hashFunction, 3);
       // Assert segments
       Cache cache = servers.get(0).getCacheManager().getCache(cacheName);
-      StateTransferManager stateTransferManager = TestingUtil.extractComponent(cache, StateTransferManager.class);
-      ConsistentHash ch = stateTransferManager.getCacheTopology().getCurrentCH();
+      LocalizedCacheTopology cacheTopology = cache.getAdvancedCache().getDistributionManager().getCacheTopology();
+      assertEquals(cacheTopology.getActualMembers().size(), servers.size());
+      ConsistentHash ch = cacheTopology.getCurrentCH();
       int numSegments = ch.getNumSegments();
       int numOwners = ch.getNumOwners();
       assertEquals(hashTopologyResp.segments.size(), numSegments);
       for (int i = 0; i < numSegments; ++i) {
          List<Address> segment = ch.locateOwnersForSegment(i);
          Iterable<ServerAddress> members = hashTopologyResp.segments.get(i);
-         assertEquals(numOwners, segment.size());
+         assertEquals(Math.min(numOwners, ch.getMembers().size()), segment.size());
          int count = 0;
          for (ServerAddress member : members) {
             count++;
             assertTrue(serverAddresses.contains(member));
          }
-         assertEquals(numOwners, count);
+         // The number of servers could be smaller than the number of CH members (same as the number of actual members)
+         assertEquals(Math.min(numOwners, servers.size()), count);
       }
    }
 

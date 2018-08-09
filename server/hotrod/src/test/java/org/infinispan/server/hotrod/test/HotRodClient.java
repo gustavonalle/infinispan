@@ -1191,6 +1191,14 @@ class TestTopologyAwareResponse extends AbstractTestTopologyAwareResponse {
    protected TestTopologyAwareResponse(int topologyId, Collection<ServerAddress> members) {
       super(topologyId, members);
    }
+
+   @Override
+   public String toString() {
+      return "TestTopologyAwareResponse{" +
+             "topologyId=" + topologyId +
+             ", members=" + members +
+             '}';
+   }
 }
 
 class TestHashDistAware10Response extends AbstractTestTopologyAwareResponse {
@@ -1207,6 +1215,18 @@ class TestHashDistAware10Response extends AbstractTestTopologyAwareResponse {
       this.numOwners = numOwners;
       this.hashFunction = hashFunction;
       this.hashSpace = hashSpace;
+   }
+
+   @Override
+   public String toString() {
+      return "TestHashDistAware10Response{" +
+             "hashIds=" + hashIds +
+             ", numOwners=" + numOwners +
+             ", hashFunction=" + hashFunction +
+             ", hashSpace=" + hashSpace +
+             ", topologyId=" + topologyId +
+             ", members=" + members +
+             '}';
    }
 }
 
@@ -1227,6 +1247,19 @@ class TestHashDistAware11Response extends AbstractTestTopologyAwareResponse {
       this.hashSpace = hashSpace;
       this.numVirtualNodes = numVirtualNodes;
    }
+
+   @Override
+   public String toString() {
+      return "TestHashDistAware11Response{" +
+             "membersToHash=" + membersToHash +
+             ", numOwners=" + numOwners +
+             ", hashFunction=" + hashFunction +
+             ", hashSpace=" + hashSpace +
+             ", numVirtualNodes=" + numVirtualNodes +
+             ", topologyId=" + topologyId +
+             ", members=" + members +
+             '}';
+   }
 }
 
 class TestHashDistAware20Response extends AbstractTestTopologyAwareResponse {
@@ -1238,5 +1271,15 @@ class TestHashDistAware20Response extends AbstractTestTopologyAwareResponse {
       super(topologyId, members);
       this.segments = segments;
       this.hashFunction = hashFunction;
+   }
+
+   @Override
+   public String toString() {
+      return "TestHashDistAware20Response{" +
+             "segments=" + segments.size() +
+             ", hashFunction=" + hashFunction +
+             ", topologyId=" + topologyId +
+             ", members=" + members +
+             '}';
    }
 }

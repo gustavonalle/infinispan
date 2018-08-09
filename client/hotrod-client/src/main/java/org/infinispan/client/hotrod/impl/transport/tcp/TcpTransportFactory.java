@@ -58,12 +58,10 @@ public class TcpTransportFactory implements TransportFactory {
    public static final String DEFAULT_CLUSTER_NAME = "___DEFAULT-CLUSTER___";
 
    /**
-    * We need synchronization as the thread that calls {@link TransportFactory#start(org.infinispan.client.hotrod.impl.protocol.Codec,
-    * might (and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(Object, java.util.Set, byte[])} or other methods
-    * org.infinispan.client.hotrod.configuration.Configuration, java.util.concurrent.atomic.AtomicInteger,
-    * org.infinispan.client.hotrod.event.impl.ClientListenerNotifier)}
-    * might(and likely will) be different from the thread(s) that calls {@link TransportFactory#getTransport(byte[],
-    * java.util.Set, byte[])} or other methods
+    * We need synchronization as the thread that calls
+    * {@link TransportFactory#start(Codec, Configuration, AtomicInteger, ClientListenerNotifier, Collection)}
+    * might(and likely will) be different from the thread(s) that calls
+    * {@link TransportFactory#getTransport(Object, Set, byte[])} or other methods
     */
    private final Object lock = new Object();
    // The connection pool implementation is assumed to be thread-safe, so we need to synchronize just the access to this field and not the method calls
@@ -346,20 +344,19 @@ public class TcpTransportFactory implements TransportFactory {
       synchronized (lock) {
          Collection<SocketAddress> servers = updateTopologyInfo(cacheName, newServers, quiet);
          if (!servers.isEmpty()) {
-            FailoverRequestBalancingStrategy balancer = getOrCreateIfAbsentBalancer(cacheName);
-            balancer.setServers(servers);
+            if (cacheName != null && cacheName.length > 0) {
+               FailoverRequestBalancingStrategy balancer = getOrCreateIfAbsentBalancer(cacheName);
+               balancer.setServers(servers);
+            } else {
+               for (FailoverRequestBalancingStrategy balancer : balancers.values())
+                  balancer.setServers(servers);
+            }
          }
       }
    }
 
    private void updateServers(Collection<SocketAddress> newServers, boolean quiet) {
-      synchronized (lock) {
-         Collection<SocketAddress> servers = updateTopologyInfo(null, newServers, quiet);
-         if (!servers.isEmpty()) {
-            for (FailoverRequestBalancingStrategy balancer : balancers.values())
-               balancer.setServers(servers);
-         }
-      }
+      updateServers(newServers, null, quiet);
    }
 
    @GuardedBy("lock")
