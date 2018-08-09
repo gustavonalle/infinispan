@@ -1236,6 +1236,12 @@
         entries in the cache.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="strategy" type="tns:eviction-strategy">
+      <xs:annotation>
+        <xs:documentation>The eviction strategy to use. This determines if eviction is even enabled or if it
+          has a different variant.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="memory-binary">
@@ -1244,6 +1250,12 @@
         <xs:documentation>The size of the eviction cache as a long.  If the configured type is COUNT, this will be
           how many entries can be stored.  If the configured type is MEMORY, this will be how much memory
           in bytes can be stored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="strategy" type="tns:eviction-strategy">
+      <xs:annotation>
+        <xs:documentation>The eviction strategy to use. This determines if eviction is even enabled or if it
+          has a different variant.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="eviction" type="tns:eviction-type">
@@ -1260,6 +1272,12 @@
         <xs:documentation>The size of the eviction cache as a long.  If the configured type is COUNT, this will be
           how many entries can be stored.  If the configured type is MEMORY, this will be how much memory
           in bytes can be stored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="strategy" type="tns:eviction-strategy">
+      <xs:annotation>
+        <xs:documentation>The eviction strategy to use. This determines if eviction is even enabled or if it
+          has a different variant.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="eviction" type="tns:eviction-type">
@@ -1907,6 +1925,19 @@
       <xs:enumeration value="MANUAL">
         <xs:annotation>
           <xs:documentation>Eviction will be performed manually. Equivalent internally to NONE.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="REMOVE">
+        <xs:annotation>
+          <xs:documentation>Eviction will be performed automatically to ensure that "older" entries are removed to make room
+            for new entries.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="EXCEPTION">
+        <xs:annotation>
+          <xs:documentation>Eviction is not performed and instead when the container is full exceptions will prevent
+            new entries from being written to the container. This cache must be transactional and now allow for
+            commit optimizations that would prevent it from performing a two phase commit.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
