@@ -151,12 +151,14 @@ public class ClusterExpirationManager<K, V> extends ExpirationManagerImpl<K, V> 
    public void handleInMemoryExpiration(InternalCacheEntry<K, V> entry, long currentTime) {
       // We need to synchronize on the entry since {@link InternalCacheEntry} locks the entry when doing an update
       // so we can see both the new value and the metadata
+      boolean expiredMortal;
       synchronized (entry) {
-         if (ExpiryHelper.isExpiredMortal(entry.getLifespan(), entry.getCreated(), currentTime)) {
-            handleLifespanExpireEntry(entry);
-         } else {
-            super.handleInMemoryExpiration(entry, currentTime);
-         }
+         expiredMortal = ExpiryHelper.isExpiredMortal(entry.getLifespan(), entry.getCreated(), currentTime);
+      }
+      if (expiredMortal) {
+         handleLifespanExpireEntry(entry);
+      } else {
+         super.handleInMemoryExpiration(entry, currentTime);
       }
    }
 
