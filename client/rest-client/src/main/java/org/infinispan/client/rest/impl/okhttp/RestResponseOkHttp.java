@@ -47,6 +47,15 @@ public class RestResponseOkHttp implements RestResponse {
    }
 
    @Override
+   public byte[] getBodyAsByteArray() {
+      try {
+         return response.body().bytes();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+   }
+
+   @Override
    public MediaType contentType() {
       okhttp3.MediaType mediaType = response.body().contentType();
       return mediaType == null ? null : MediaType.fromString(mediaType.toString());
