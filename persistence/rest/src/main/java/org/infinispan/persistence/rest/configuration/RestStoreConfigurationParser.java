@@ -142,12 +142,8 @@ public class RestStoreConfigurationParser implements ConfigurationParser {
          String attributeName = reader.getAttributeLocalName(i);
          Attribute attribute = Attribute.forName(attributeName);
          switch (attribute) {
-            case APPEND_CACHE_NAME_TO_PATH: {
-               builder.appendCacheNameToPath(Boolean.parseBoolean(value));
-               break;
-            }
-            case PATH: {
-               builder.path(value);
+            case CACHE_NAME: {
+               builder.cacheName(value);
                break;
             }
             case KEY_TO_STRING_MAPPER: {

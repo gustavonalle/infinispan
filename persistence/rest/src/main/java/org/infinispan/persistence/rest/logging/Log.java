@@ -56,4 +56,7 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Error loading entries from remote server", id = 22005)
    PersistenceException errorLoadingRemoteEntries(@Cause Exception e);
+
+   @Message(value = "Error getting cache size", id = 22006)
+   PersistenceException errorGettingCacheSize(@Cause Exception e);
 }

@@ -12,8 +12,6 @@ import java.util.Map;
 public enum Attribute {
    // must be first
    UNKNOWN(null),
-
-   APPEND_CACHE_NAME_TO_PATH("append-cache-name-to-path"),
    BUFFER_SIZE("buffer-size"),
    CONNECTION_TIMEOUT("connection-timeout"),
    HOST("host"),
@@ -21,7 +19,7 @@ public enum Attribute {
    MAX_CONNECTIONS_PER_HOST("max-connections-per-host"),
    MAX_TOTAL_CONNECTIONS("max-total-connections"),
    OUTBOUND_SOCKET_BINDING("outbound-socket-binding"),
-   PATH("path"),
+   CACHE_NAME("cache-name"),
    PORT("port"),
    RAW_VALUES("raw-values"),
    SOCKET_TIMEOUT("socket-timeout"),
