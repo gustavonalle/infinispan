@@ -102,7 +102,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
    }
 
    protected String getUrl(RestServerHelper restServerHelper, String cacheName) {
-      return String.format("http://localhost:%d/rest/%s?action=search", restServerHelper.getPort(), cacheName);
+      return String.format("http://localhost:%d/rest/v2/caches/%s?action=search", restServerHelper.getPort(), cacheName);
    }
 
    @BeforeClass
@@ -277,7 +277,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
       RestServerHelper helper = restServers.get(0);
       int port = helper.getPort();
 
-      String clearIndexURL = String.format("http://localhost:%d/rest/v2/caches/%s/search/indexes?action=clear", port, CACHE_NAME);
+      String clearIndexURL = String.format("http://localhost:%d/rest/v2/caches/v2/caches/%s/search/indexes?action=clear", port, CACHE_NAME);
       String massIndexURL = String.format("http://localhost:%d/rest/v2/caches/%s/search/indexes?action=mass-index", port, CACHE_NAME);
       Request massIndexRequest = client.newRequest(massIndexURL);
       Request clearIndexRequest = client.newRequest(clearIndexURL);
@@ -377,7 +377,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
 
    protected void write(int id, String contents, HttpMethod method, MediaType contentType) throws Exception {
       ContentResponse response = client
-            .newRequest(String.format("http://localhost:%d/rest/%s/%d", pickServer().getPort(), CACHE_NAME, id))
+            .newRequest(String.format("http://localhost:%d/rest/v2/caches/%s/%d", pickServer().getPort(), CACHE_NAME, id))
             .method(method)
             .content(new StringContentProvider(contents))
             .header(HttpHeader.CONTENT_TYPE, contentType.toString())
@@ -386,7 +386,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
    }
 
    protected ContentResponse get(String id, String accept) throws Exception {
-      return client.newRequest(String.format("http://localhost:%d/rest/%s/%s", pickServer().getPort(), CACHE_NAME, id))
+      return client.newRequest(String.format("http://localhost:%d/rest/v2/caches/%s/%s", pickServer().getPort(), CACHE_NAME, id))
             .header(HttpHeader.ACCEPT, accept)
             .send();
    }
@@ -429,7 +429,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
    }
 
    private String getProtobufMetadataUrl(String key) {
-      return String.format("http://localhost:%d/rest/%s/%s", pickServer().getPort(), PROTOBUF_METADATA_CACHE_NAME, key);
+      return String.format("http://localhost:%d/rest/v2/caches/%s/%s", pickServer().getPort(), PROTOBUF_METADATA_CACHE_NAME, key);
    }
 
    private void assertZeroHits(JsonNode queryResponse) {
