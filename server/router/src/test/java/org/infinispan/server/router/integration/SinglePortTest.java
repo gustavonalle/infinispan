@@ -159,7 +159,7 @@ public class SinglePortTest {
         EndpointRouter endpointRouter = router.getRouter(EndpointRouter.Protocol.SINGLE_PORT).get();
         String host = endpointRouter.getHost();
         int port = endpointRouter.getPort();
-        String restPrefix = String.format("/%s/%s", restServer.getConfiguration().contextPath(), cacheManager.getCacheManagerConfiguration().defaultCacheName().get());
+        String restPrefix = String.format("/%s/v2/caches/%s", restServer.getConfiguration().contextPath(), cacheManager.getCacheManagerConfiguration().defaultCacheName().get());
 
         // First off we verify that the HTTP side of things works
         RestClientConfigurationBuilder builder = new RestClientConfigurationBuilder();
