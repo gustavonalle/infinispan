@@ -277,7 +277,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
       RestServerHelper helper = restServers.get(0);
       int port = helper.getPort();
 
-      String clearIndexURL = String.format("http://localhost:%d/rest/v2/caches/v2/caches/%s/search/indexes?action=clear", port, CACHE_NAME);
+      String clearIndexURL = String.format("http://localhost:%d/rest/v2/caches/%s/search/indexes?action=clear", port, CACHE_NAME);
       String massIndexURL = String.format("http://localhost:%d/rest/v2/caches/%s/search/indexes?action=mass-index", port, CACHE_NAME);
       Request massIndexRequest = client.newRequest(massIndexURL);
       Request clearIndexRequest = client.newRequest(clearIndexURL);
