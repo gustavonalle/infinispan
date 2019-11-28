@@ -22,4 +22,6 @@ public interface RestResponse extends RestEntity {
    byte[] getBodyAsByteArray();
 
    Protocol getProtocol();
+
+   void close();
 }

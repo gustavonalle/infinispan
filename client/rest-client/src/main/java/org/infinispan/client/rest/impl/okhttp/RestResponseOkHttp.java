@@ -73,4 +73,9 @@ public class RestResponseOkHttp implements RestResponse {
             throw new IllegalStateException("Unknown protocol " + response.protocol());
       }
    }
+
+   @Override
+   public void close() {
+      response.close();
+   }
 }

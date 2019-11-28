@@ -103,7 +103,7 @@ public class RestStore<K, V> implements AdvancedLoadWriteStore<K, V> {
       client = RestClient.forConfiguration(clientConfig);
       String cacheName = configuration.cacheName();
 
-      if(cacheName == null) cacheName = initialCtxCache;
+      if (cacheName == null) cacheName = initialCtxCache;
 
       cacheClient = client.cache(cacheName);
 
@@ -226,8 +226,9 @@ public class RestStore<K, V> implements AdvancedLoadWriteStore<K, V> {
    }
 
    private MarshallableEntry<K, V> load(Object key, boolean fetchValue, boolean fetchMetadata) {
+      RestResponse response = null;
       try {
-         RestResponse response = CompletableFutures.await(cacheClient.get(encodeKey(key)).toCompletableFuture());
+         response = CompletableFutures.await(cacheClient.get(encodeKey(key)).toCompletableFuture());
 
          if (isSuccessful(response.getStatus())) {
             String contentType = getHeader("Content-Type", response);
@@ -263,7 +264,12 @@ public class RestStore<K, V> implements AdvancedLoadWriteStore<K, V> {
          throw log.httpError(e);
       } catch (Exception e) {
          throw new PersistenceException(e);
+      } finally {
+         if(response != null) {
+            response.close();
+         }
       }
+
    }
 
    private long timeoutToSeconds(long timeout) {
