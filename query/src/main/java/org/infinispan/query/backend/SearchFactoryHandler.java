@@ -6,12 +6,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Transaction;
 
+import org.hibernate.search.engine.impl.MutableSearchFactory;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.infinispan.query.impl.SegmentFieldBridge;
 import org.infinispan.query.logging.Log;
 import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.LogFactory;
@@ -94,7 +96,7 @@ final class SearchFactoryHandler {
 
          Transaction tx = transactionHelper.suspendTxIfExists();
          try {
-            searchFactory.addClasses(newtypes);
+            rebootSearchFactory(searchFactory, newtypes);
          } finally {
             transactionHelper.resume(tx);
          }
@@ -108,6 +110,14 @@ final class SearchFactoryHandler {
       }
    }
 
+   static void rebootSearchFactory(SearchIntegrator searchFactory, Class<?>[] newtypes) {
+      MutableSearchFactory mutableSearchFactory = searchFactory.unwrap(MutableSearchFactory.class);
+      for (Class<?> clazz : newtypes) {
+         mutableSearchFactory.getProgrammaticMapping().entity(clazz).classBridge(SegmentFieldBridge.class);
+      }
+      mutableSearchFactory.getFilterDefinitions().remove("segmentFilter");
+      searchFactory.addClasses(newtypes);
+   }
    /**
     * Checks if an index exists for the given class. This is not intended to test whether the entity class is indexable
     * (via annotations or programmatically).

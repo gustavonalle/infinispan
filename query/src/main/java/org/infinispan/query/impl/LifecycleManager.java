@@ -12,12 +12,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.hibernate.search.analyzer.definition.LuceneAnalysisDefinitionProvider;
 import org.hibernate.search.cfg.spi.SearchConfiguration;
+import org.hibernate.search.engine.impl.MutableSearchFactory;
 import org.hibernate.search.engine.service.classloading.spi.ClassLoaderService;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.spi.SearchIntegratorBuilder;
@@ -60,6 +62,7 @@ import org.infinispan.query.backend.QueryInterceptor;
 import org.infinispan.query.backend.QueryKnownClasses;
 import org.infinispan.query.backend.SearchableCacheConfiguration;
 import org.infinispan.query.backend.TxQueryInterceptor;
+import org.infinispan.query.clustered.ClusteredQueryOperation;
 import org.infinispan.query.clustered.NodeTopDocs;
 import org.infinispan.query.clustered.QueryResponse;
 import org.infinispan.query.clustered.commandworkers.QueryBox;
@@ -71,6 +74,7 @@ import org.infinispan.query.dsl.embedded.impl.IckleCacheEventFilterConverter;
 import org.infinispan.query.dsl.embedded.impl.IckleFilterAndConverter;
 import org.infinispan.query.dsl.embedded.impl.QueryCache;
 import org.infinispan.query.impl.externalizers.ExternalizerIds;
+import org.infinispan.query.impl.externalizers.FullTextFilterExternalizer;
 import org.infinispan.query.impl.externalizers.LuceneBooleanQueryExternalizer;
 import org.infinispan.query.impl.externalizers.LuceneBytesRefExternalizer;
 import org.infinispan.query.impl.externalizers.LuceneFieldDocExternalizer;
@@ -132,11 +136,12 @@ public class LifecycleManager implements ModuleLifecycle {
          if (isIndexed) {
             setBooleanQueryMaxClauseCount();
 
+            KeyTransformationHandler keyTransformationHandler = new KeyTransformationHandler(aggregatedClassLoader);
+            cr.registerComponent(keyTransformationHandler, KeyTransformationHandler.class);
+
             cr.registerComponent(new ShardAllocationManagerImpl(), ShardAllocatorManager.class);
             searchFactory = createSearchIntegrator(cfg.indexing(), cr, aggregatedClassLoader);
 
-            KeyTransformationHandler keyTransformationHandler = new KeyTransformationHandler(aggregatedClassLoader);
-            cr.registerComponent(keyTransformationHandler, KeyTransformationHandler.class);
 
             createQueryInterceptorIfNeeded(cr.getComponent(BasicComponentRegistry.class), cfg, cache, searchFactory, keyTransformationHandler);
             addCacheDependencyIfNeeded(cacheName, cache.getCacheManager(), cfg.indexing());
@@ -206,7 +211,7 @@ public class LifecycleManager implements ModuleLifecycle {
 
       // add the interceptor to the configuration also
       builder.customInterceptors().addInterceptor()
-             .interceptor(queryInterceptor).after(lastLoadingInterceptor.getClass());
+            .interceptor(queryInterceptor).after(lastLoadingInterceptor.getClass());
 
       if (cfg.transaction().transactionMode().isTransactional()) {
          TxQueryInterceptor txQueryInterceptor = new TxQueryInterceptor(txOldValues, queryInterceptor);
@@ -246,6 +251,11 @@ public class LifecycleManager implements ModuleLifecycle {
             if (cacheName.equals(dataCacheName) && (cacheName.equals(metadataCacheName) || cacheName.equals(lockingCacheName))) {
                // Infinispan Directory causes runtime circular dependencies so we need to postpone creation of indexes until all components are initialised
                Class<?>[] indexedEntities = indexingConfiguration.indexedEntities().toArray(new Class<?>[indexingConfiguration.indexedEntities().size()]);
+               MutableSearchFactory mutableSearchFactory = searchFactory.unwrap(MutableSearchFactory.class);
+               mutableSearchFactory.getFilterDefinitions().remove("segmentFilter");
+               for(Class<?> clazz : indexedEntities) {
+                  mutableSearchFactory.getProgrammaticMapping().entity(clazz).classBridge(SegmentFieldBridge.class);
+               }
                searchFactory.addClasses(indexedEntities);
                checkIndexableClasses(searchFactory, indexingConfiguration.indexedEntities());
             }
@@ -335,6 +345,12 @@ public class LifecycleManager implements ModuleLifecycle {
       Collection<ProgrammaticSearchMappingProvider> programmaticSearchMappingProviders = new LinkedHashSet<>();
       programmaticSearchMappingProviders.add(new DefaultSearchMappingProvider());  // make sure our DefaultSearchMappingProvider is first
       programmaticSearchMappingProviders.addAll(ServiceFinder.load(ProgrammaticSearchMappingProvider.class, aggregatedClassLoader));
+
+      programmaticSearchMappingProviders.add((cache, mapping) -> {
+         for (Class<?> indexedEntity : indexingConfiguration.indexedEntities()) {
+            mapping.entity(indexedEntity).classBridge(SegmentFieldBridge.class).name("gustavo");
+         }
+      });
 
       // load LuceneAnalysisDefinitionProvider from classpath
       Collection<LuceneAnalysisDefinitionProvider> analyzerDefProviders = ServiceFinder.load(LuceneAnalysisDefinitionProvider.class, aggregatedClassLoader);
@@ -478,6 +494,8 @@ public class LifecycleManager implements ModuleLifecycle {
       externalizerMap.put(ExternalizerIds.LUCENE_QUERY_FUZZY, new LuceneFuzzyQueryExternalizer());
       externalizerMap.put(ExternalizerIds.QUERY_DEFINITION, new QueryDefinition.Externalizer());
       externalizerMap.put(ExternalizerIds.CLUSTERED_QUERY_COMMAND_RESPONSE, new QueryResponse.Externalizer());
+      externalizerMap.put(ExternalizerIds.FULL_TEXT_FILTER, new FullTextFilterExternalizer());
+      externalizerMap.put(ExternalizerIds.CLUSTERED_QUERY_OPERATION, new ClusteredQueryOperation.Externalizer());
    }
 
    @Override

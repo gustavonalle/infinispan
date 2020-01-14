@@ -1,6 +1,7 @@
 package org.infinispan.query.clustered.commandworkers;
 
 import java.io.IOException;
+import java.util.BitSet;
 import java.util.UUID;
 
 import org.hibernate.search.exception.SearchException;
@@ -44,7 +45,7 @@ abstract class CQWorker {
       this.docIndex = docIndex;
    }
 
-   abstract QueryResponse perform();
+   abstract QueryResponse perform(BitSet segments);
 
    QueryBox getQueryBox() {
       if (queryBox == null) {

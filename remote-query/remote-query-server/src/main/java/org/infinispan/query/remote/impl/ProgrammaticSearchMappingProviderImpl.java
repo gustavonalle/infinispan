@@ -11,6 +11,7 @@ import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapperAnalyzerDis
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapperFieldBridge;
 import org.infinispan.query.remote.impl.indexing.ProtobufValueWrapperIndexingInterceptor;
 import org.infinispan.query.remote.impl.logging.Log;
+import org.infinispan.query.impl.SegmentFieldBridge;
 import org.infinispan.query.spi.ProgrammaticSearchMappingProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -46,6 +47,7 @@ public final class ProgrammaticSearchMappingProviderImpl implements Programmatic
             .interceptor(ProtobufValueWrapperIndexingInterceptor.class)
             .analyzerDiscriminator(ProtobufValueWrapperAnalyzerDiscriminator.class)
             .classBridgeInstance(new ProtobufValueWrapperFieldBridge(cache))
+            .classBridge(SegmentFieldBridge.class)
             .norms(Norms.NO)
             .analyze(Analyze.NO)
             .store(Store.NO);
