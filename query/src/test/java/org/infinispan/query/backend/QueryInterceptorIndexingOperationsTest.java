@@ -1,11 +1,11 @@
 package org.infinispan.query.backend;
 
+import static org.infinispan.query.dsl.IndexedQueryMode.FETCH;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.IOException;
 
 import org.apache.lucene.index.SegmentInfos;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.store.Directory;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -110,7 +110,7 @@ public class QueryInterceptorIndexingOperationsTest extends SingleCacheManagerTe
 
    private Configuration nonIndexed() {
       return new ConfigurationBuilder().indexing().index(Index.NONE)
-              .addProperty("lucene_version", "LUCENE_CURRENT").build();
+            .addProperty("lucene_version", "LUCENE_CURRENT").build();
    }
 
    interface Operation {
@@ -131,7 +131,7 @@ public class QueryInterceptorIndexingOperationsTest extends SingleCacheManagerTe
    }
 
    private int countIndexedDocuments(Class<?> clazz) {
-      CacheQuery<?> query = Search.getSearchManager(cache).getQuery(new MatchAllDocsQuery(), clazz);
+      CacheQuery<?> query = Search.getSearchManager(cache).getQuery("FROM " + clazz.getName(), FETCH, clazz);
       return query.list().size();
    }
 

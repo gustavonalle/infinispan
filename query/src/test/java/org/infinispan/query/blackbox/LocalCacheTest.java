@@ -1,8 +1,7 @@
 package org.infinispan.query.blackbox;
 
 import static java.util.Arrays.asList;
-import static org.infinispan.query.helper.TestQueryHelperFactory.createCacheQuery;
-import static org.infinispan.query.helper.TestQueryHelperFactory.createQueryParser;
+import static org.infinispan.query.dsl.IndexedQueryMode.FETCH;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.AssertJUnit.assertEquals;
@@ -13,18 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
 import org.hibernate.search.filter.FullTextFilter;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.CacheImpl;
@@ -35,6 +25,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
 import org.infinispan.query.Search;
+import org.infinispan.query.SearchManager;
 import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.query.test.AnotherGrassEater;
@@ -53,7 +44,6 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    protected Person person3;
    protected Person person4;
    protected AnotherGrassEater anotherGrassEater;
-   protected QueryParser queryParser;
    protected String key1 = "Navin";
    protected String key2 = "BigGoat";
    protected String key3 = "MiniGoat";
@@ -63,9 +53,14 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       cleanup = CleanupPhase.AFTER_METHOD;
    }
 
-   public void testSimple() throws ParseException {
+   private CacheQuery<Person> createQuery(String predicate, Class<?>... entities) {
+      SearchManager searchManager = Search.getSearchManager(cache);
+      return searchManager.getQuery(String.format("FROM %s WHERE %s", Person.class.getName(), predicate), FETCH, entities);
+   }
+
+   public void testSimple() {
       loadTestingData();
-      CacheQuery<Person> cacheQuery = createCacheQuery(cache, "blurb", "playing" );
+      CacheQuery<Person> cacheQuery = createQuery("blurb:'playing'");
 
       List<Person> found = cacheQuery.list();
 
@@ -77,70 +72,46 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testSimpleForNonField() throws ParseException {
+   public void testEagerIterator() {
       loadTestingData();
-      CacheQuery<?> cacheQuery = createCacheQuery(cache, "nonIndexedField", "test1" );
-      List<?> found = cacheQuery.list();
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      int elems = found.size();
-      assert elems == 0 : "Expected 0 but was " + elems;
-      StaticTestingErrorHandler.assertAllGood(cache);
-   }
-
-   public void testEagerIterator() throws ParseException {
-      loadTestingData();
-      CacheQuery<?> cacheQuery = createCacheQuery(cache, "blurb", "playing");
-
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER))) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
-      } finally {
-         found.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
    @Test(expectedExceptions = UnsupportedOperationException.class)
-   public void testEagerIteratorRemove() throws ParseException {
+   public void testEagerIteratorRemove() {
       loadTestingData();
-      CacheQuery<?> cacheQuery = createCacheQuery(cache, "blurb", "playing");
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER))) {
          assertTrue(found.hasNext());
          found.remove();
-      } finally {
-         found.close();
       }
    }
 
    @Test(expectedExceptions = NoSuchElementException.class)
-   public void testEagerIteratorExCase() throws ParseException {
+   public void testEagerIteratorExCase() {
       loadTestingData();
-      CacheQuery<?> cacheQuery = createCacheQuery(cache, "blurb", "playing");
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER))) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
          found.next();
-      } finally {
-         found.close();
       }
    }
 
-   public void testMultipleResults() throws ParseException {
+   public void testMultipleResults() {
       loadTestingData();
-      queryParser = createQueryParser("name");
 
-      Query luceneQuery = queryParser.parse("goat");
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> cacheQuery = createQuery("name:'goat'");
       List<Person> found = cacheQuery.list();
 
       assert found.size() == 2;
@@ -149,11 +120,9 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testModified() throws ParseException {
+   public void testModified() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> cacheQuery = createQuery("blurb:'playing'");
 
       List<Person> found = cacheQuery.list();
 
@@ -163,9 +132,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       person1.setBlurb("Likes pizza");
       cache.put(key1, person1);
 
-      queryParser = createQueryParser("blurb");
-      luceneQuery = queryParser.parse("pizza");
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      cacheQuery = createQuery("blurb:'pizza'");
 
       found = cacheQuery.list();
 
@@ -174,12 +141,9 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testAdded() throws ParseException {
+   public void testAdded() {
       loadTestingData();
-      queryParser = createQueryParser("name");
-
-      Query luceneQuery = queryParser.parse("Goat");
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> cacheQuery = createQuery("name:'Goat'");
       List<Person> found = cacheQuery.list();
 
       assert found.size() == 2 : "Size of list should be 2";
@@ -193,8 +157,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       cache.put("mighty", person4);
 
-      luceneQuery = queryParser.parse("Goat");
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      cacheQuery = createQuery("name:'Goat'");
       found = cacheQuery.list();
 
       assert found.size() == 3 : "Size of list should be 3";
@@ -204,12 +167,10 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testRemoved() throws ParseException {
+   public void testRemoved() {
       loadTestingData();
-      queryParser = createQueryParser("name");
 
-      Query luceneQuery = queryParser.parse("Goat");
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> cacheQuery = createQuery("name:'Goat'");
       List<Person> found = cacheQuery.list();
 
       assert found.size() == 2;
@@ -218,8 +179,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       cache.remove(key3);
 
-      luceneQuery = queryParser.parse("Goat");
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      cacheQuery = createQuery("name:'Goat'");
       found = cacheQuery.list();
 
       assert found.size() == 1;
@@ -228,12 +188,9 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testUpdated() throws ParseException {
+   public void testUpdated() {
       loadTestingData();
-      queryParser = createQueryParser("name");
-
-      Query luceneQuery = queryParser.parse("Goat");
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> cacheQuery = createQuery("name:'Goat'");
       List<Person> found = cacheQuery.list();
 
       assert found.size() == 2 : "Size of list should be 2";
@@ -241,8 +198,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       cache.put(key2, person1);
 
-      luceneQuery = queryParser.parse("Goat");
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      cacheQuery = createQuery("name:'Goat'");
       found = cacheQuery.list();
 
       assert found.size() == 1 : "Size of list should be 1";
@@ -251,64 +207,55 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testSetSort() throws ParseException {
+   public void testSetSort() {
       loadTestingData();
 
       Sort sort = new Sort(new SortField("age", SortField.Type.INT));
 
-      queryParser = createQueryParser("name");
+      CacheQuery<Person> cacheQuery = createQuery("name:'Goat'");
+      List<Person> found = cacheQuery.list();
 
-      Query luceneQuery = queryParser.parse("Goat");
-      {
-         CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
-         List<Person> found = cacheQuery.list();
+      assert found.size() == 2;
 
-         assert found.size() == 2;
+      cacheQuery.sort(sort);
 
-         cacheQuery.sort(sort);
+      found = cacheQuery.list();
 
-         found = cacheQuery.list();
+      assert found.size() == 2;
+      assert found.get(0).equals(person3); // person3 is 25 and named Goat
+      assert found.get(1).equals(person2); // person2 is 30 and named Goat
 
-         assert found.size() == 2;
-         assert found.get(0).equals(person3); // person3 is 25 and named Goat
-         assert found.get(1).equals(person2); // person2 is 30 and named Goat
-      }
       StaticTestingErrorHandler.assertAllGood(cache);
 
       //Now change the stored values:
       person2.setAge(10);
       cache.put(key2, person2);
 
-      {
-         CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
-         List<Person> found = cacheQuery.list();
+      cacheQuery = createQuery("name:'Goat'");
+      found = cacheQuery.list();
 
-         assert found.size() == 2;
+      assert found.size() == 2;
 
-         cacheQuery.sort(sort);
+      cacheQuery.sort(sort);
 
-         found = cacheQuery.list();
+      found = cacheQuery.list();
 
-         assert found.size() == 2;
-         assert found.get(0).equals(person2); // person2 is 10 and named Goat
-         assert found.get(1).equals(person3); // person3 is 25 and named Goat
-      }
+      assert found.size() == 2;
+      assert found.get(0).equals(person2); // person2 is 10 and named Goat
+      assert found.get(1).equals(person3); // person3 is 25 and named Goat
+
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testSetFilter() throws ParseException {
+   public void testSetFilter() {
       loadTestingData();
-      queryParser = createQueryParser("name");
 
-      Query luceneQuery = queryParser.parse("goat");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("name:'goat'");
       List<?> found = cacheQuery.list();
 
       assert found.size() == 2;
 
-      BooleanQuery filter = new BooleanQuery.Builder().add(new PrefixQuery(new Term("blurb", "cheese")), Occur.FILTER).build();
-
-      cacheQuery.filter(new QueryWrapperFilter(filter));
+      cacheQuery = createQuery("name:'goat' AND blurb:'cheese'");
 
       found = cacheQuery.list();
 
@@ -316,69 +263,49 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testLazyIterator() throws ParseException {
+   public void testLazyIterator() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY))) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
-      } finally {
-         found.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Unknown FetchMode null")
-   public void testUnknownFetchModeIterator() throws ParseException {
+   public void testUnknownFetchModeIterator() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions() {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions() {
          public FetchMode getFetchMode() {
             return null;
          }
-      });
-
-      try {
+      })) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
-      } finally {
-         found.close();
       }
    }
 
-   public void testIteratorWithDefaultOptions() throws ParseException {
+   public void testIteratorWithDefaultOptions() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator();
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator()) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
-      } finally {
-         found.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testExplain() throws ParseException {
+   public void testExplain() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'");
 
       int matchCounter = 0;
       int i = 0;
@@ -394,8 +321,8 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
             i++;
             if (i >= 10 || matchCounter == 3)
-                break;
-         } catch(ArrayIndexOutOfBoundsException ex) {
+               break;
+         } catch (ArrayIndexOutOfBoundsException ex) {
             break;
          }
       }
@@ -404,12 +331,10 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testFullTextFilterOnOff() throws ParseException {
+   public void testFullTextFilterOnOff() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
 
-      CacheQuery<Person> query = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<Person> query = createQuery("blurb:'Eats'");
       FullTextFilter filter = query.enableFullTextFilter("personFilter");
       filter.setParameter("blurbText", "cheese");
 
@@ -427,36 +352,25 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    }
 
    @Test(expectedExceptions = UnsupportedOperationException.class)
-   public void testIteratorRemove() throws ParseException {
+   public void testIteratorRemove() {
       loadTestingData();
 
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
-
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
-      ResultIterator<?> iterator = cacheQuery.iterator();
-      try {
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'");
+      try (ResultIterator<?> iterator = cacheQuery.iterator()) {
          if (iterator.hasNext()) {
             iterator.next();
             iterator.remove();
          }
-      } finally {
-         iterator.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testLazyIteratorWithOffset() throws ParseException {
+   public void testLazyIteratorWithOffset() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).<Person>getQuery(luceneQuery).firstResult(1);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'").firstResult(1);
 
-      ResultIterator<?> iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
-      try {
+      try (ResultIterator<?> iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY))) {
          assertEquals(2, countElements(iterator));
-      } finally {
-         iterator.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
@@ -467,69 +381,50 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
-   public void testLazyIteratorWithInvalidFetchSize() throws ParseException {
+   public void testLazyIteratorWithInvalidFetchSize() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).<Person>getQuery(luceneQuery).firstResult(1);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'").firstResult(1);
 
       cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY).fetchSize(0));
    }
 
    @Test(expectedExceptions = NoSuchElementException.class)
-   public void testLazyIteratorWithNoElementsFound() throws ParseException {
+   public void testLazyIteratorWithNoElementsFound() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("fish");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).<Person>getQuery(luceneQuery).firstResult(1);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'fish'").firstResult(1);
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY))) {
          found.next();
-      } finally {
-         found.close();
       }
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
-   public void testIteratorWithNullFetchMode() throws ParseException {
+   public void testIteratorWithNullFetchMode() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).<Person>getQuery(luceneQuery).firstResult(1);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'").firstResult(1);
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(null));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(null))) {
          found.next();
-      } finally {
-         found.close();
       }
    }
 
-   public void testSearchKeyTransformer() throws ParseException {
+   public void testSearchKeyTransformer() {
       SearchManagerImplementor manager = Search.getSearchManager(cache).unwrap(SearchManagerImplementor.class);
       manager.registerKeyTransformer(CustomKey3.class, CustomKey3Transformer.class);
 
       loadTestingDataWithCustomKey();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("Eats");
 
-      CacheQuery<?> cacheQuery = manager.getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'Eats'");
 
-      ResultIterator<?> iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
-      try {
+      try (ResultIterator<?> iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY))) {
          assertEquals(3, countElements(iterator));
-      } finally {
-         iterator.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testSearchWithWrongCache() {
-      Cache cache = mock(CacheImpl.class);
+      Cache<?, ?> cache = mock(CacheImpl.class);
       when(cache.getAdvancedCache()).thenReturn(null);
 
       Search.getSearchManager(cache);
@@ -537,62 +432,41 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
    //Another test just for covering Search.java instantiation, although it is unnecessary. As well as covering the
    //valueOf() method of FetchMode, again just for adding coverage.
-   public void testSearchManagerWithInstantiation() throws ParseException {
+   public void testSearchManagerWithInstantiation() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
 
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
-      ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.valueOf("LAZY")));
-
-      try {
+      try (ResultIterator<?> found = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.valueOf("LAZY")))) {
          assertTrue(found.hasNext());
          found.next();
          assertFalse(found.hasNext());
-      } finally {
-         found.close();
       }
    }
 
-   public void testGetResultSize() throws ParseException {
+   public void testGetResultSize() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("playing");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'playing'");
 
       assert cacheQuery.getResultSize() == 1;
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testMaxResults() throws ParseException {
+   public void testMaxResults() {
       loadTestingData();
 
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("eats");
-
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery)
-            .maxResults(1);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'eats'").maxResults(1);
 
       assertEquals(3, cacheQuery.getResultSize());   // NOTE: getResultSize() ignores pagination (maxResults, firstResult)
       assertEquals(1, cacheQuery.list().size());
-      ResultIterator<?> eagerIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER));
-      try {
+      try (ResultIterator<?> eagerIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER))) {
          assertEquals(1, countElements(eagerIterator));
-      } finally {
-         eagerIterator.close();
       }
-      ResultIterator<?> lazyIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
-      try {
+      try (ResultIterator<?> lazyIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY))) {
          assertEquals(1, countElements(lazyIterator));
-      } finally {
-         lazyIterator.close();
       }
-      ResultIterator<?> defaultIterator = cacheQuery.iterator();
-      try {
+      try (ResultIterator<?> defaultIterator = cacheQuery.iterator()) {
          assertEquals(1, countElements(defaultIterator));
-      } finally {
-         defaultIterator.close();
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
@@ -609,43 +483,30 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    public void testClear() {
       loadTestingData();
 
-      // Create a term that will return me everyone called Navin.
-      Term navin = new Term("name", "navin");
-
-      // Create a term that I know will return me everything with name goat.
-      Term goat = new Term("name", "goat");
-
-      BooleanQuery luceneQuery = new BooleanQuery.Builder()
-              .add(new TermQuery(goat), Occur.SHOULD)
-              .add(new TermQuery(navin), Occur.SHOULD)
-              .build();
-      CacheQuery<Person> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      String predicate = "name:'navin' OR name:'goat'";
+      CacheQuery<Person> cacheQuery = createQuery(predicate);
 
       // We know that we've got all 3 hits.
       assert cacheQuery.getResultSize() == 3 : "Expected 3, got " + cacheQuery.getResultSize();
 
       cache.clear();
 
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      cacheQuery = createQuery(predicate);
 
       assert cacheQuery.getResultSize() == 0;
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   public void testTypeFiltering() throws ParseException {
+   public void testTypeFiltering() {
       loadTestingData();
-      queryParser = createQueryParser("blurb");
-      Query luceneQuery = queryParser.parse("grass");
-      CacheQuery<?> cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
+      CacheQuery<?> cacheQuery = createQuery("blurb:'grass'");
 
       List<?> found = cacheQuery.list();
 
       assert found.size() == 2;
       assert found.containsAll(asList(person2, anotherGrassEater));
 
-      queryParser = createQueryParser("blurb");
-      luceneQuery = queryParser.parse("grass");
-      cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery, AnotherGrassEater.class);
+      cacheQuery = createQuery("blurb:'grass'", AnotherGrassEater.class);
 
       found = cacheQuery.list();
 
@@ -658,7 +519,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    protected EmbeddedCacheManager createCacheManager() throws Exception {
       ConfigurationBuilder cfg = getDefaultStandaloneCacheConfig(true);
       cfg
-         .indexing()
+            .indexing()
             .index(Index.ALL)
             .addIndexedEntity(Person.class)
             .addIndexedEntity(AnotherGrassEater.class)

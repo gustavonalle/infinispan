@@ -19,8 +19,7 @@ import org.infinispan.client.hotrod.query.testdomain.protobuf.marshallers.TestDo
 import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
-import org.infinispan.query.CacheQuery;
-import org.infinispan.query.SearchManager;
+import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
@@ -58,6 +57,7 @@ public class RemoteQueryDslPerfTest extends MultipleCacheManagersTest {
       builder.encoding().key().mediaType(APPLICATION_OBJECT_TYPE);
       builder.encoding().value().mediaType(APPLICATION_OBJECT_TYPE);
       builder.indexing().index(Index.ALL)
+            .addIndexedEntity(UserHS.class)
             .addProperty("default.directory_provider", "local-heap")
             .addProperty("lucene_version", "LUCENE_CURRENT");
       createClusteredCaches(1, TestDomainSCI.INSTANCE, builder);
@@ -151,14 +151,12 @@ public class RemoteQueryDslPerfTest extends MultipleCacheManagersTest {
    }
 
    public void testEmbeddedLuceneQueryExecution() throws Exception {
-      SearchManager searchManager = org.infinispan.query.Search.getSearchManager(cache);
-      org.apache.lucene.search.Query query = searchManager.buildQueryBuilderForClass(UserHS.class).get()
-            .keyword().onField("name").matching("John1").createQuery();
+      QueryFactory queryFactory = Search.getQueryFactory(cache);
+      Query cacheQuery = queryFactory.create(String.format("From %s where name = 'John1'", UserHS.class.getName()));
 
       final int loops = 100000;
       final long startTs = System.nanoTime();
       for (int i = 0; i < loops; i++) {
-         CacheQuery<User> cacheQuery = searchManager.getQuery(query);
          List<User> list = cacheQuery.list();
          assertEquals(1, list.size());
          assertEquals("John1", list.get(0).getName());

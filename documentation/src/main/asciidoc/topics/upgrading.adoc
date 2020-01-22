@@ -2,7 +2,9 @@
 
 == Query
 
-The AffinityIndexManager is removed. Indexes should be configured with the ```near-real-time``` index manager instead.
+* The AffinityIndexManager is removed. Indexes should be configured with the ```near-real-time``` index manager instead.
+
+* The methods `SearchManager.getQuery()` that take a Lucene Query have been removed. The alternative methods that take an Ickle query string should be used instead.
 
 = Upgrading from 10.0 to 10.1 and 10.0 to 11.0
 

@@ -7,14 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.lucene.search.Query;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
-import org.infinispan.query.SearchManager;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.query.test.QueryTestSCI;
 import org.infinispan.test.SingleCacheManagerTest;
@@ -36,7 +35,7 @@ public class PutAllTest extends SingleCacheManagerTest {
 
    @Factory
    public Object[] factory() {
-      return new Object[] {
+      return new Object[]{
             new PutAllTest().storageType(StorageType.OFF_HEAP),
             new PutAllTest().storageType(StorageType.BINARY),
             new PutAllTest().storageType(StorageType.OBJECT),
@@ -72,9 +71,10 @@ public class PutAllTest extends SingleCacheManagerTest {
       map.put(id, new TestEntity("name2", "surname2", id, "note"));
       cache.putAll(map);
 
-      CacheQuery<?> q1 = queryByNameField("name2", AnotherTestEntity.class);
-      assertEquals(1, q1.getResultSize());
-      assertEquals(TestEntity.class, q1.list().get(0).getClass());
+      Query q1 = queryByNameField("name2", AnotherTestEntity.class);
+      Query q2 = queryByNameField("name2", TestEntity.class);
+      assertEquals(1, q1.getResultSize() + q2.getResultSize());
+      assertEquals(TestEntity.class, q2.list().get(0).getClass());
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
@@ -88,8 +88,9 @@ public class PutAllTest extends SingleCacheManagerTest {
       Future futureTask = cache.putAllAsync(map);
       futureTask.get();
       assertTrue(futureTask.isDone());
-      CacheQuery<?> q1 = queryByNameField("name2", AnotherTestEntity.class);
-      assertEquals(1, q1.getResultSize());
+      Query q1 = queryByNameField("name2", TestEntity.class);
+      Query q2 = queryByNameField("name2", AnotherTestEntity.class);
+      assertEquals(1, q1.getResultSize() + q2.getResultSize());
       assertEquals(TestEntity.class, q1.list().get(0).getClass());
       StaticTestingErrorHandler.assertAllGood(cache);
    }
@@ -98,18 +99,19 @@ public class PutAllTest extends SingleCacheManagerTest {
       final long id = 10;
 
       cache.put(id, new TestEntity("name1", "surname1", id, "note"));
-      CacheQuery<?> q1 = queryByNameField("name1", TestEntity.class);
-      assertEquals(1, q1.getResultSize());
+      Query q1 = queryByNameField("name1", TestEntity.class);
+      Query q2 = queryByNameField("name1", AnotherTestEntity.class);
+      assertEquals(1, q1.getResultSize() + q2.getResultSize());
       assertEquals(TestEntity.class, q1.list().get(0).getClass());
 
       Map<Object, Object> map = new HashMap<>();
       map.put(id, new NotIndexedType("name2"));
       cache.putAll(map);
 
-      CacheQuery<?> q2 = queryByNameField("name1", TestEntity.class);
+      q2 = queryByNameField("name1", TestEntity.class);
       assertEquals(0, q2.getResultSize());
 
-      CacheQuery<?> q3 = queryByNameField("name2", TestEntity.class);
+      Query q3 = queryByNameField("name2", TestEntity.class);
       assertEquals(0, q3.getResultSize());
       StaticTestingErrorHandler.assertAllGood(cache);
    }
@@ -118,7 +120,7 @@ public class PutAllTest extends SingleCacheManagerTest {
       final long id = 10;
 
       cache.put(id, new TestEntity("name1", "surname1", id, "note"));
-      CacheQuery<?> q1 = queryByNameField("name1", TestEntity.class);
+      Query q1 = queryByNameField("name1", TestEntity.class);
       assertEquals(1, q1.getResultSize());
       assertEquals(TestEntity.class, q1.list().get(0).getClass());
 
@@ -127,10 +129,10 @@ public class PutAllTest extends SingleCacheManagerTest {
       Future futureTask = cache.putAllAsync(map);
       futureTask.get();
       assertTrue(futureTask.isDone());
-      CacheQuery<?> q2 = queryByNameField("name1", TestEntity.class);
+      Query q2 = queryByNameField("name1", TestEntity.class);
       assertEquals(0, q2.getResultSize());
 
-      CacheQuery<?> q3 = queryByNameField("name2", TestEntity.class);
+      Query q3 = queryByNameField("name2", TestEntity.class);
       assertEquals(0, q3.getResultSize());
       StaticTestingErrorHandler.assertAllGood(cache);
    }
@@ -140,7 +142,7 @@ public class PutAllTest extends SingleCacheManagerTest {
 
       cache.put(id, new TestEntity("name1", "surname1", id, "note"));
 
-      CacheQuery<?> q1 = queryByNameField("name1", TestEntity.class);
+      Query q1 = queryByNameField("name1", TestEntity.class);
       assertEquals(1, q1.getResultSize());
       assertEquals(TestEntity.class, q1.list().get(0).getClass());
 
@@ -148,19 +150,17 @@ public class PutAllTest extends SingleCacheManagerTest {
       map.put(id, new AnotherTestEntity("name2"));
       cache.putAll(map);
 
-      CacheQuery<?> q2 = queryByNameField("name1", TestEntity.class);
+      Query q2 = queryByNameField("name1", TestEntity.class);
       assertEquals(0, q2.getResultSize());
 
-      CacheQuery<?> q3 = queryByNameField("name2", AnotherTestEntity.class);
+      Query q3 = queryByNameField("name2", AnotherTestEntity.class);
       assertEquals(1, q3.getResultSize());
       assertEquals(AnotherTestEntity.class, q3.list().get(0).getClass());
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 
-   private <T> CacheQuery<T> queryByNameField(String name, Class<T> entity) {
-      SearchManager sm = Search.getSearchManager(cache);
-      Query query = sm.buildQueryBuilderForClass(entity)
-            .get().keyword().onField("name").matching(name).createQuery();
-      return sm.getQuery(query);
+   private <T> Query queryByNameField(String name, Class<T> entity) {
+      QueryFactory queryFactory = Search.getQueryFactory(cache);
+      return queryFactory.create(String.format("FROM %s WHERE name = '%s'", entity.getName(), name));
    }
 }

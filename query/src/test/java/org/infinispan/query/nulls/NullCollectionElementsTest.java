@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 
-import org.apache.lucene.search.Query;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -27,6 +25,7 @@ import org.infinispan.query.ProjectionConstants;
 import org.infinispan.query.ResultIterator;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
+import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.test.QueryTestSCI;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -67,12 +66,16 @@ public class NullCollectionElementsTest extends SingleCacheManagerTest {
       });
    }
 
+   CacheQuery<?> createCacheQuery() {
+      String q = String.format("FROM %s WHERE bar:1", Foo.class.getName());
+      return searchManager.getQuery(q, IndexedQueryMode.FETCH);
+   }
+
    @Test
    public void testQuerySkipsNullsInList() throws Exception {
       withTx(tm(), (Callable<Void>) () -> {
          cache.remove("1");   // cache will now be out of sync with the index
-         Query query = createQueryBuilder().keyword().onField("bar").matching("1").createQuery();
-         List list = searchManager.getQuery(query).list();
+         List<?> list = createCacheQuery().list();
          assert list.size() == 0;
          return null;
       });
@@ -82,8 +85,7 @@ public class NullCollectionElementsTest extends SingleCacheManagerTest {
    public void testQuerySkipsNullsInEagerIterator() throws Exception {
       withTx(tm(), (Callable<Void>) () -> {
          cache.remove("1");   // cache will now be out of sync with the index
-         Query query = createQueryBuilder().keyword().onField("bar").matching("1").createQuery();
-         ResultIterator<?> iterator = searchManager.getQuery(query).iterator(new FetchOptions().fetchMode(EAGER));
+         ResultIterator<?> iterator = createCacheQuery().iterator(new FetchOptions().fetchMode(EAGER));
          assertFalse(iterator.hasNext());
          try {
             iterator.next();
@@ -99,8 +101,7 @@ public class NullCollectionElementsTest extends SingleCacheManagerTest {
    public void testQuerySkipsNullsInDefaultIterator() throws Exception {
       withTx(tm(), (Callable<Void>) () -> {
          cache.remove("1");   // cache will now be out of sync with the index
-         Query query = createQueryBuilder().keyword().onField("bar").matching("1").createQuery();
-         CacheQuery<?> cacheQuery = searchManager.getQuery(query);
+         CacheQuery<?> cacheQuery = createCacheQuery();
          assertEquals(1, cacheQuery.getResultSize());
          ResultIterator<?> iterator = cacheQuery.iterator();
          assertFalse(iterator.hasNext());
@@ -118,8 +119,7 @@ public class NullCollectionElementsTest extends SingleCacheManagerTest {
    public void testQuerySkipsNullsInLazyIterator() throws Exception {
       withTx(tm(), (Callable<Void>) () -> {
          cache.remove("1");   // cache will now be out of sync with the index
-         Query query = createQueryBuilder().keyword().onField("bar").matching("1").createQuery();
-         ResultIterator<?> iterator = searchManager.getQuery(query).iterator(new FetchOptions().fetchMode(LAZY));
+         ResultIterator<?> iterator = createCacheQuery().iterator(new FetchOptions().fetchMode(LAZY));
          assertFalse(iterator.hasNext());
          try {
             iterator.next();
@@ -135,18 +135,13 @@ public class NullCollectionElementsTest extends SingleCacheManagerTest {
    public void testQueryReturnsNullWhenProjectingCacheValue() throws Exception {
       withTx(tm(), (Callable<Void>) () -> {
          cache.remove("1");   // cache will now be out of sync with the index
-         Query query = createQueryBuilder().keyword().onField("bar").matching("1").createQuery();
-         ResultIterator<Object[]> iterator = searchManager.getQuery(query).projection(ProjectionConstants.VALUE, "bar").iterator(new FetchOptions().fetchMode(LAZY));
+         ResultIterator<Object[]> iterator = createCacheQuery().projection(ProjectionConstants.VALUE, "bar").iterator(new FetchOptions().fetchMode(LAZY));
          assertTrue(iterator.hasNext());
          Object[] projection = iterator.next();
          assertNull(projection[0]);
          assertEquals("1", projection[1]);
          return null;
       });
-   }
-
-   private QueryBuilder createQueryBuilder() {
-      return searchManager.buildQueryBuilderForClass(Foo.class).get();
    }
 
    @Indexed(index = "FooIndex")

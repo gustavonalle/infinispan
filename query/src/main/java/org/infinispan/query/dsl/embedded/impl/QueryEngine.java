@@ -49,6 +49,10 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.backend.KeyTransformationHandler;
 import org.infinispan.query.clustered.ClusteredCacheQueryImpl;
+import org.infinispan.query.core.impl.AggregatingQuery;
+import org.infinispan.query.core.impl.EmbeddedQuery;
+import org.infinispan.query.core.impl.EmptyResultQuery;
+import org.infinispan.query.core.impl.HybridQuery;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
@@ -56,10 +60,6 @@ import org.infinispan.query.dsl.impl.BaseQuery;
 import org.infinispan.query.dsl.impl.QueryStringCreator;
 import org.infinispan.query.impl.CacheQueryImpl;
 import org.infinispan.query.impl.QueryDefinition;
-import org.infinispan.query.core.impl.AggregatingQuery;
-import org.infinispan.query.core.impl.EmbeddedQuery;
-import org.infinispan.query.core.impl.EmptyResultQuery;
-import org.infinispan.query.core.impl.HybridQuery;
 import org.infinispan.query.logging.Log;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.util.function.SerializableFunction;
@@ -738,7 +738,7 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
             log.debugf("The resulting Lucene query is : %s", luceneQuery.toString());
          }
 
-         CacheQuery cacheQuery = new CacheQueryImpl<>(luceneQuery, searchFactory, cache, keyTransformationHandler,
+         CacheQuery cacheQuery = new CacheQueryImpl<>(luceneQuery, getSearchFactory(), cache, keyTransformationHandler,
                timeoutExceptionFactory, classes);
 
          if (luceneParsingResult.getSort() != null) {
