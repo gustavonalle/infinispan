@@ -18,10 +18,12 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.assertj.core.api.Assertions;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.ByteBufferContentProvider;
@@ -32,6 +34,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.dataconversion.StandardConversions;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.container.entries.CacheEntry;
@@ -451,7 +454,7 @@ public abstract class BaseCacheResourceTest extends AbstractRestResourceTest {
       ResponseAssertion.assertThat(response).isOk();
       ResponseAssertion.assertThat(response).hasContentType("application/json");
       // keys can be returned in any order
-      ResponseAssertion.assertThat(response).hasReturnedText("[\"key2\",\"key1\"]","[\"key1\",\"key2\"]");
+      ResponseAssertion.assertThat(response).hasReturnedText("[\"key2\",\"key1\"]", "[\"key1\",\"key2\"]");
    }
 
    @Test
@@ -1044,4 +1047,37 @@ public abstract class BaseCacheResourceTest extends AbstractRestResourceTest {
       ResponseAssertion.assertThat(response).containsReturnedText("<string>foo</string>");
    }
 
+   @Test
+   public void testEncodeKey() throws Exception {
+      String key = "ã/b/c/d";
+      String value = "value";
+
+      ObjectMapper mapper = new ObjectMapper();
+
+      byte[] keyBytes = key.getBytes(UTF_8);
+      String base64Key = Base64.getEncoder().encodeToString(keyBytes);
+      String hexKey = StandardConversions.bytesToHex(keyBytes);
+
+      byte[] bytes = StandardConversions.hexToBytes(hexKey);
+      String s = new String(bytes);
+
+      putInCache("default", base64Key, "application/octet-stream;encoding=base64", value, TEXT_PLAIN_TYPE);
+
+      ContentResponse keysResponse = client
+            .newRequest(String.format("http://localhost:%d/rest/v2/caches/default?action=keys", restServer().getPort()))
+            .send();
+
+      String contentAsString = keysResponse.getContentAsString();
+
+      putInCache("default", hexKey, "application/octet-stream", value, TEXT_PLAIN_TYPE);
+
+      keysResponse = client
+            .newRequest(String.format("http://localhost:%d/rest/v2/caches/default?action=keys", restServer().getPort()))
+            .send();
+
+      contentAsString = keysResponse.getContentAsString();
+      System.out.println(contentAsString);
+
+
+   }
 }
