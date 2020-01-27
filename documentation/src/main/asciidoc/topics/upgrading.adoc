@@ -4,6 +4,8 @@
 
 * The AffinityIndexManager is removed. Indexes should be configured with the ```near-real-time``` index manager instead.
 
+* The methods `SearchManager.getQuery()` that take a Lucene Query have been removed. The alternative methods that take an Ickle query string should be used instead.
+
 * The IndexMode is deprecated. Infinispan will automatically figure out how to index the entries. The following substitutions should be made in the configuration:
     ** `index="PRIMARY_OWNER"` => `index enabled="true"`
     ** `index="ALL"` => `index enabled="true"`
