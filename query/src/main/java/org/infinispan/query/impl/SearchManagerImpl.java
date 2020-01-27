@@ -6,7 +6,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.query.dsl.EntityContext;
-import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.hibernate.search.spi.CustomTypeMetadata;
 import org.hibernate.search.spi.IndexedTypeIdentifier;
@@ -20,7 +19,6 @@ import org.infinispan.query.MassIndexer;
 import org.infinispan.query.Transformer;
 import org.infinispan.query.backend.KeyTransformationHandler;
 import org.infinispan.query.backend.QueryInterceptor;
-import org.infinispan.query.clustered.ClusteredCacheQueryImpl;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.embedded.impl.QueryEngine;
 import org.infinispan.query.spi.SearchManagerImplementor;
@@ -76,24 +74,6 @@ public final class SearchManagerImpl implements SearchManagerImplementor {
    public <E> CacheQuery<E> getQuery(QueryDefinition queryDefinition, IndexedQueryMode indexedQueryMode, IndexedTypeMap<CustomTypeMetadata> indexedTypeMap) {
       ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
       return queryEngine.buildCacheQuery(queryDefinition, indexedQueryMode, keyTransformationHandler, timeoutExceptionFactory, asyncExecutor, indexedTypeMap);
-   }
-
-   /**
-    * Internal and experimental! Creates a {@link CacheQuery}, filtered according to the given {@link HSQuery}.
-    *
-    * @param hSearchQuery {@link HSQuery}
-    * @return the CacheQuery object which can be used to iterate through results
-    */
-   public <E> CacheQuery<E> getQuery(HSQuery hSearchQuery, IndexedQueryMode queryMode) {
-      if (timeoutExceptionFactory != null) {
-         hSearchQuery.timeoutExceptionFactory(timeoutExceptionFactory);
-      }
-      if (queryMode == IndexedQueryMode.BROADCAST) {
-         ExecutorService asyncExecutor = queryInterceptor.getAsyncExecutor();
-         return new ClusteredCacheQueryImpl<>(new QueryDefinition(hSearchQuery), asyncExecutor, cache, keyTransformationHandler, null);
-      } else {
-         return new CacheQueryImpl<>(hSearchQuery, cache, keyTransformationHandler);
-      }
    }
 
    @Override
