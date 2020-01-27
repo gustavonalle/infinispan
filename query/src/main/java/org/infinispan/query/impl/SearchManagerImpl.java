@@ -78,11 +78,6 @@ public final class SearchManagerImpl implements SearchManagerImplementor {
       return queryEngine.buildCacheQuery(queryDefinition, indexedQueryMode, keyTransformationHandler, timeoutExceptionFactory, asyncExecutor, indexedTypeMap);
    }
 
-   @Override
-   public <E> CacheQuery<E> getQuery(Query luceneQuery, Class<?>... classes) {
-      return getQuery(luceneQuery, IndexedQueryMode.FETCH, classes);
-   }
-
    /**
     * Internal and experimental! Creates a {@link CacheQuery}, filtered according to the given {@link HSQuery}.
     *
