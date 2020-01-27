@@ -4,7 +4,6 @@ import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.List;
 
-import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetingRequest;
@@ -13,6 +12,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
+import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterMethod;
@@ -66,9 +66,9 @@ public class SimpleFacetingTest extends SingleCacheManagerTest {
             .discrete()
             .createFacetingRequest();
 
-      Query luceneQuery = queryBuilder.all().createQuery();
+      String q = "FROM " + Car.class.getName();
 
-      CacheQuery<?> query = qf.getQuery(luceneQuery);
+      CacheQuery<?> query = qf.getQuery(q, IndexedQueryMode.FETCH);
 
       query.getFacetManager().enableFaceting(request);
 
