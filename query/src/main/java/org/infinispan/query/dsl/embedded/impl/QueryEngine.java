@@ -738,7 +738,7 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
             log.debugf("The resulting Lucene query is : %s", luceneQuery.toString());
          }
 
-         CacheQuery cacheQuery = new CacheQueryImpl<>(luceneQuery, searchFactory, cache, keyTransformationHandler,
+         CacheQuery cacheQuery = new CacheQueryImpl<>(luceneQuery, getSearchFactory(), cache, keyTransformationHandler,
                timeoutExceptionFactory, classes);
 
          if (luceneParsingResult.getSort() != null) {
