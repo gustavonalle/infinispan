@@ -49,6 +49,10 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.backend.KeyTransformationHandler;
 import org.infinispan.query.clustered.ClusteredCacheQueryImpl;
+import org.infinispan.query.core.impl.AggregatingQuery;
+import org.infinispan.query.core.impl.EmbeddedQuery;
+import org.infinispan.query.core.impl.EmptyResultQuery;
+import org.infinispan.query.core.impl.HybridQuery;
 import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
@@ -56,10 +60,6 @@ import org.infinispan.query.dsl.impl.BaseQuery;
 import org.infinispan.query.dsl.impl.QueryStringCreator;
 import org.infinispan.query.impl.CacheQueryImpl;
 import org.infinispan.query.impl.QueryDefinition;
-import org.infinispan.query.core.impl.AggregatingQuery;
-import org.infinispan.query.core.impl.EmbeddedQuery;
-import org.infinispan.query.core.impl.EmptyResultQuery;
-import org.infinispan.query.core.impl.HybridQuery;
 import org.infinispan.query.logging.Log;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.util.function.SerializableFunction;
@@ -666,15 +666,9 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
                                             TimeoutExceptionFactory timeoutExceptionFactory,
                                             ExecutorService asyncExecutor,
                                             Class<?>... classes) {
-      CacheQuery cacheQuery;
-      if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
-         cacheQuery = new ClusteredCacheQueryImpl<>(luceneQuery, getSearchFactory(), asyncExecutor, cache,
-               keyTransformationHandler, classes);
-      } else {
-         cacheQuery = new CacheQueryImpl<>(luceneQuery, getSearchFactory(), cache, keyTransformationHandler,
-               timeoutExceptionFactory, classes);
-      }
-      return (CacheQuery<E>) cacheQuery;
+      return new CacheQueryImpl<>(luceneQuery, getSearchFactory(), cache, keyTransformationHandler,
+            timeoutExceptionFactory, classes);
+
    }
 
    public HsQueryRequest createHsQuery(String queryString, IndexedTypeMap<CustomTypeMetadata> metadata, Map<String, Object> nameParameters) {
