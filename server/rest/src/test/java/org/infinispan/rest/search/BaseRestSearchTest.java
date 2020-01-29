@@ -275,7 +275,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
 
    @Test
    public void testMassIndexing() throws Exception {
-      boolean indexEnabled = getConfigBuilder().indexing().enabled();
+      boolean indexEnabled = getConfigBuilder().build().indexing().isEnabled();
       RestServerHelper helper = restServers.get(0);
       int port = helper.getPort();
 
@@ -305,7 +305,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
       Request statsRequest = client.newRequest(getStatsURL);
       Request clearStatsRequest = client.newRequest(resetStatsURL);
       ContentResponse response = statsRequest.send();
-      if (!getConfigBuilder().indexing().enabled()) {
+      if (!getConfigBuilder().build().indexing().isEnabled()) {
          assertEquals(response.getStatus(), BAD_REQUEST_400);
       } else {
          assertEquals(response.getStatus(), OK_200);
@@ -337,7 +337,7 @@ public abstract class BaseRestSearchTest extends MultipleCacheManagersTest {
       Request statsRequest = client.newRequest(getStatsURL);
 
       ContentResponse response = statsRequest.send();
-      if (!getConfigBuilder().indexing().enabled()) {
+      if (!getConfigBuilder().build().indexing().isEnabled()) {
          assertEquals(response.getStatus(), BAD_REQUEST_400);
       } else {
          assertEquals(response.getStatus(), OK_200);

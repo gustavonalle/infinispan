@@ -24,7 +24,9 @@ public enum Index {
 
    /**
     * Is indexing enabled?
+    * @deprecated Use {@link IndexingConfiguration#isEnabled()}} instead
     */
+   @Deprecated
    public boolean isEnabled() {
       return this != NONE;
    }

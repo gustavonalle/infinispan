@@ -35,7 +35,6 @@ import org.infinispan.configuration.cache.ClusterLoaderConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.EncodingConfiguration;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.InterceptorConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
@@ -428,7 +427,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             assertFalse(fileStore.shared());
             assertEquals(2048, fileStore.async().modificationQueueSize());
             assertEquals(1, fileStore.async().threadPoolSize());
-            assertEquals(Index.NONE, c.indexing().index());
+            assertFalse(c.indexing().isEnabled());
 
             c = getConfiguration(holder, "invalid");
             assertEquals(CacheMode.INVALIDATION_SYNC, c.clustering().cacheMode());
@@ -447,7 +446,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             assertEquals(10500, c.expiration().wakeUpInterval());
             assertEquals(11, c.expiration().lifespan());
             assertEquals(11, c.expiration().maxIdle());
-            assertEquals(Index.NONE, c.indexing().index());
+            assertFalse(c.indexing().isEnabled());
 
             c = getConfiguration(holder, "repl");
             assertEquals(CacheMode.REPL_SYNC, c.clustering().cacheMode());
@@ -472,7 +471,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             ClusterLoaderConfiguration clusterLoader = getStoreConfiguration(c, ClusterLoaderConfiguration.class);
             assertEquals(35000, clusterLoader.remoteCallTimeout());
             assertFalse(clusterLoader.preload());
-            assertEquals(Index.NONE, c.indexing().index());
+            assertFalse(c.indexing().isEnabled());
 
             c = getConfiguration(holder, "dist");
             assertEquals(CacheMode.DIST_SYNC, c.clustering().cacheMode());
@@ -565,7 +564,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
             assertTrue(fileStore.preload());
             assertFalse(fileStore.purgeOnStartup());
-            assertEquals(Index.NONE, c.indexing().index());
+            assertFalse(c.indexing().isEnabled());
 
             c = getConfiguration(holder, "capedwarf-dist");
             assertEquals(CacheMode.DIST_SYNC, c.clustering().cacheMode());
@@ -588,7 +587,7 @@ public class UnifiedXmlFileParsingTest extends AbstractInfinispanTest {
             fileStore = getStoreConfiguration(c, SingleFileStoreConfiguration.class);
             assertTrue(fileStore.preload());
             assertFalse(fileStore.purgeOnStartup());
-            assertEquals(Index.NONE, c.indexing().index());
+            assertFalse(c.indexing().isEnabled());
 
             c = getConfiguration(holder, "HibernateSearch-LuceneIndexesMetadata");
             assertEquals(CacheMode.REPL_SYNC, c.clustering().cacheMode());

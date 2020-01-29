@@ -127,7 +127,7 @@ public final class DataConversion {
          return contentTypeConfiguration.mediaType();
       }
       // Indexed caches started by the server will assume application/protostream as storage media type
-      if (!embeddedMode && configuration.indexing().index().isEnabled() && contentTypeConfiguration.mediaType() == null) {
+      if (!embeddedMode && configuration.indexing().isEnabled() && contentTypeConfiguration.mediaType() == null) {
          return MediaType.APPLICATION_PROTOSTREAM;
       }
       return MediaType.APPLICATION_UNKNOWN;

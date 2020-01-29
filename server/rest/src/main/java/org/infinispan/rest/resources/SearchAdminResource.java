@@ -151,7 +151,7 @@ public class SearchAdminResource implements ResourceHandler {
          return null;
       }
       Configuration cacheConfiguration = cache.getCacheConfiguration();
-      if (!cacheConfiguration.indexing().index().isEnabled()) {
+      if (!cacheConfiguration.indexing().isEnabled()) {
          builder.entity("cache is not indexed").status(BAD_REQUEST.code()).build();
       }
       return cache;

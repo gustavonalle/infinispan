@@ -1938,4 +1938,8 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Unexpected response from %s: %s", id = 570)
    IllegalArgumentException unexpectedResponse(Address target, Response response);
+
+   @LogMessage(level = WARN)
+   @Message(value = "IndexMode is deprecated and is automatically detected when indexing is enabled. Please replace this attribute with \"enabled='true'\"", id = 571)
+   void indexModeDeprecated();
 }

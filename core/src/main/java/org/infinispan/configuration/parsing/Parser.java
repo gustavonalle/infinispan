@@ -2544,13 +2544,27 @@ public class Parser implements ConfigurationParser {
          String value = reader.getAttributeValue(i);
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
+            case ENABLED:
+               if (reader.getSchema().since(11, 0)) {
+                  builder.indexing().setEnabled(Boolean.parseBoolean(value));
+               } else {
+                  throw ParseUtils.unexpectedAttribute(reader, i);
+               }
+               break;
             case INDEX:
+               if (reader.getSchema().since(11, 0)) {
+                  CONFIG.indexModeDeprecated();
+               }
                if ("LOCAL".equals(value)) {
                   value = "PRIMARY_OWNER";
                   CONFIG.indexLocalIsNotSupported();
                }
+               if ("NONE".equals(value)) {
+                  builder.indexing().disable();
+               }
                Index index = Index.valueOf(value);
                builder.indexing().index(index);
+
                break;
             case AUTO_CONFIG:
                builder.indexing().autoConfig(Boolean.parseBoolean(value));

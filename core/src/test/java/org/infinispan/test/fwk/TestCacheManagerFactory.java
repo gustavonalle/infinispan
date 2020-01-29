@@ -16,7 +16,6 @@ import org.infinispan.commons.util.LegacyKeySupportSystemProperties;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
@@ -328,9 +327,10 @@ public class TestCacheManagerFactory {
          globalBuilder.serialization().addContextInitializer(sci);
 
       ConfigurationBuilder builder = new ConfigurationBuilder();
-      builder.clustering().cacheMode(mode)
-             .indexing().index(indexing ? Index.ALL : Index.NONE)
-             .addProperty("lucene_version", "LUCENE_CURRENT");
+      builder.clustering().cacheMode(mode);
+      if(indexing) {
+         builder.indexing().setEnabled(true).addProperty("lucene_version", "LUCENE_CURRENT");
+      }
       if (mode.isClustered()) {
          return createClusteredCacheManager(globalBuilder, builder);
       } else {
