@@ -1,6 +1,5 @@
 package org.infinispan.query.backend;
 
-import static org.infinispan.query.dsl.IndexedQueryMode.FETCH;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.IOException;
@@ -130,7 +129,7 @@ public class QueryInterceptorIndexingOperationsTest extends SingleCacheManagerTe
    }
 
    private int countIndexedDocuments(Class<?> clazz) {
-      CacheQuery<?> query = Search.getSearchManager(cache).getQuery("FROM " + clazz.getName(), FETCH, clazz);
+      CacheQuery<?> query = Search.getSearchManager(cache).getQuery("FROM " + clazz.getName());
       return query.list().size();
    }
 

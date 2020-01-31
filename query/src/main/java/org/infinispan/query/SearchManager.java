@@ -19,8 +19,17 @@ public interface SearchManager {
     * @throws org.hibernate.search.exception.SearchException if the queryString cannot be converted to an indexed query,
     *                                                        due to lack of indexes to resolve it fully or if contains
     *                                                        aggregations and grouping.
+    * @deprecated Querying multiple entities is not supported by Ickle and IndexedQueryMode is now automatically selected,
+    * use {@link SearchManager#getQuery(String)} instead.
     */
+   @Deprecated
    <E> CacheQuery<E> getQuery(String queryString, IndexedQueryMode indexedQueryMode, Class<?>... classes);
+
+
+   /**
+    * @see SearchManager#getQuery(String)
+    */
+   <E> CacheQuery<E> getQuery(String queryString);
 
    /**
     * Provides the Hibernate Search DSL entrypoint to build full text queries.

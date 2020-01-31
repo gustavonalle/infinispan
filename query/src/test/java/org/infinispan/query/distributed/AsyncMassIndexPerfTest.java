@@ -1,7 +1,5 @@
 package org.infinispan.query.distributed;
 
-import static org.infinispan.query.dsl.IndexedQueryMode.FETCH;
-
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -180,7 +178,7 @@ public class AsyncMassIndexPerfTest extends MultipleCacheManagersTest {
 
    protected int countIndex() {
       SearchManager searchManager = Search.getSearchManager(cache1);
-      CacheQuery<?> q = searchManager.getQuery("FROM " + Transaction.class.getName(), FETCH);
+      CacheQuery<?> q = searchManager.getQuery("FROM " + Transaction.class.getName());
       return q.getResultSize();
    }
 

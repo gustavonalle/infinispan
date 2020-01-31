@@ -32,7 +32,6 @@ import org.infinispan.query.ProjectionConstants;
 import org.infinispan.query.ResultIterator;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
-import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.Test;
@@ -190,7 +189,7 @@ public class NullCollectionElementsClusteredTest extends MultipleCacheManagersTe
    private CacheQuery<Foo> createCacheQuery(Cache<?, ?> cache, String value) {
       SearchManager searchManager = Search.getSearchManager(cache);
       String q = String.format("FROM %s where bar:'%s'", Foo.class.getName(), value);
-      return searchManager.getQuery(q, IndexedQueryMode.FETCH);
+      return searchManager.getQuery(q);
    }
 
    private Cache<String, Foo> getKeyLocation(String key) {

@@ -1,13 +1,13 @@
 package org.infinispan.query.blackbox;
 
 import static java.util.Arrays.asList;
-import static org.infinispan.query.dsl.IndexedQueryMode.FETCH;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -52,9 +52,13 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       cleanup = CleanupPhase.AFTER_METHOD;
    }
 
-   private CacheQuery<Person> createQuery(String predicate, Class<?>... entities) {
+   private CacheQuery<Person> createQuery(String predicate, Class<?> entity) {
       SearchManager searchManager = Search.getSearchManager(cache);
-      return searchManager.getQuery(String.format("FROM %s WHERE %s", Person.class.getName(), predicate), FETCH, entities);
+      return searchManager.getQuery(String.format("FROM %s WHERE %s", entity.getName(), predicate));
+   }
+
+   private CacheQuery<Person> createQuery(String predicate) {
+      return createQuery(predicate, Person.class);
    }
 
    public void testSimple() {
@@ -502,8 +506,8 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       List<?> found = cacheQuery.list();
 
-      assert found.size() == 2;
-      assert found.containsAll(asList(person2, anotherGrassEater));
+      assert found.size() == 1;
+      assert found.contains(person2);
 
       cacheQuery = createQuery("blurb:'grass'", AnotherGrassEater.class);
 

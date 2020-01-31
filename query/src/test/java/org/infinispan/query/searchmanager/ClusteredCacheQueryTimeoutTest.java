@@ -11,7 +11,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
-import org.infinispan.query.dsl.IndexedQueryMode;
 import org.infinispan.query.test.Person;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.testng.annotations.Test;
@@ -43,7 +42,7 @@ public class ClusteredCacheQueryTimeoutTest extends MultipleCacheManagersTest {
       SearchManager searchManager = Search.getSearchManager(cache1);
 
       String q = String.format("FROM %s WHERE bar:'fakebar'", Foo.class.getName());
-      CacheQuery<?> query = searchManager.getQuery(q, IndexedQueryMode.BROADCAST, Foo.class);
+      CacheQuery<?> query = searchManager.getQuery(q);
       query.timeout(1, TimeUnit.NANOSECONDS);
    }
 

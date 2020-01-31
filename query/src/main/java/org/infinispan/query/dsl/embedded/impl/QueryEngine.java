@@ -59,6 +59,8 @@ import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.impl.BaseQuery;
 import org.infinispan.query.dsl.impl.QueryStringCreator;
 import org.infinispan.query.impl.CacheQueryImpl;
+import org.infinispan.query.impl.ComponentRegistryUtils;
+import org.infinispan.query.impl.IndexInspector;
 import org.infinispan.query.impl.QueryDefinition;
 import org.infinispan.query.logging.Log;
 import org.infinispan.query.spi.SearchManagerImplementor;
@@ -95,6 +97,7 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
    private SearchIntegrator searchFactory;
 
    private static final SerializableFunction<AdvancedCache<?, ?>, QueryEngine<?>> queryEngineProvider = c -> c.getComponentRegistry().getComponent(QueryEngine.class);
+   private IndexInspector indexInspector;
 
    public QueryEngine(AdvancedCache<?, ?> cache, boolean isIndexed) {
       this(cache, isIndexed, ObjectReflectionMatcher.class, null);
@@ -108,6 +111,7 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
       } else {
          this.fieldBridgeAndAnalyzerProvider = fieldBridgeAndAnalyzerProvider;
       }
+      if (isIndexed) indexInspector = ComponentRegistryUtils.getIndexInspector(cache);
    }
 
    protected SearchManagerImplementor getSearchManager() {
@@ -723,6 +727,13 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
       LuceneQueryParsingResult luceneParsingResult = transformParsingResult(parsingResult, emptyMap());
       org.apache.lucene.search.Query luceneQuery = makeTypeQuery(luceneParsingResult.getQuery(), luceneParsingResult.getTargetEntityName());
 
+      Class<?> clazz = (Class<?>)luceneParsingResult.getTargetEntityMetadata();
+      if (indexedQueryMode == null) {
+         boolean isShared = indexInspector.hasSharedIndex(clazz);
+         boolean localCache = !cache.getCacheConfiguration().clustering().cacheMode().isClustered();
+         indexedQueryMode = isShared || localCache ? IndexedQueryMode.FETCH : IndexedQueryMode.BROADCAST;
+      }
+
       if (indexedQueryMode == IndexedQueryMode.BROADCAST) {
          return new ClusteredCacheQueryImpl<>(new QueryDefinition(queryString, queryEngineProvider),
                asyncExecutor, cache, keyTransformationHandler, null);
@@ -733,7 +744,7 @@ public class QueryEngine<TypeMetadata> extends org.infinispan.query.core.impl.Qu
          }
 
          CacheQuery cacheQuery = new CacheQueryImpl<>(luceneQuery, getSearchFactory(), cache, keyTransformationHandler,
-               timeoutExceptionFactory, classes);
+               timeoutExceptionFactory, clazz);
 
          if (luceneParsingResult.getSort() != null) {
             cacheQuery = cacheQuery.sort(luceneParsingResult.getSort());
