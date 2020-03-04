@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
 
@@ -825,6 +826,15 @@ public interface AdvancedCache<K, V> extends Cache<K, V>, TransactionalCache {
     * org.infinispan.commons.dataconversion.MediaType}.
     */
    AdvancedCache<?, ?> withMediaType(String keyMediaType, String valueMediaType);
+
+   /**
+    * Perform any cache operations using the same {@link org.infinispan.commons.dataconversion.MediaType} of the cache
+    * storage. This is equivalent to disable transcoding on the cache.
+    *
+    * @return an instance of {@link AdvancedCache} where transcoding will be disabled.
+    */
+   AdvancedCache<K, V> withStorageMediaType();
+
 
    /**
     * @return The associated {@link Encoder} for the keys.

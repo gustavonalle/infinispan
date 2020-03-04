@@ -1,5 +1,6 @@
 package org.infinispan.persistence.rest;
 
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -40,6 +41,14 @@ public class RestCacheStoreFunctionalTest extends BaseStoreFunctionalTest {
    @Override
    protected EmbeddedCacheManager createCacheManager() {
       return TestCacheManagerFactory.createServerModeCacheManager(new ConfigurationBuilder());
+   }
+
+   @Override
+   protected ConfigurationBuilder getDefaultCacheConfiguration() {
+      ConfigurationBuilder builder = super.getDefaultCacheConfiguration();
+      builder.encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+      builder.encoding().value().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+      return builder;
    }
 
    @Override
