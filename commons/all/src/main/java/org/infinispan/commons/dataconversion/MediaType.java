@@ -245,6 +245,12 @@ public final class MediaType {
       return classType != null && classType.equals(String.class.getName());
    }
 
+   public boolean isBinary() {
+      String customType = getClassType();
+      if (customType == null) return !this.match(MediaType.APPLICATION_OBJECT);
+      return "ByteArray".equals(customType);
+   }
+
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;

@@ -29,11 +29,14 @@ import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.commons.util.ServiceFinder;
 import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.IndexingConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.ComponentRegistry;
@@ -109,6 +112,31 @@ public class LifecycleManager implements ModuleLifecycle {
          boolean isIndexed = cfg.indexing().enabled();
          if (isIndexed) {
             setBooleanQueryMaxClauseCount(cfg.indexing().properties());
+            TypedProperties properties = cfg.indexing().properties();
+            // Pre-define Lucene caches default configuration so that Hibernate Search won't do it
+            if (hasInfinispanDirectory(properties)) {
+               String metadataCacheName = getMetadataCacheName(properties);
+               String lockingCacheName = getLockingCacheName(properties);
+               String dataCacheName = getDataCacheName(properties);
+
+               EmbeddedCacheManager cacheManager = cr.getComponent(EmbeddedCacheManager.class);
+               boolean clustered = cacheManager.getCacheManagerConfiguration().isClustered();
+
+               if (cacheManager.getCacheConfiguration(metadataCacheName) == null) {
+                  Configuration config = getDefaultLuceneCacheConfig(clustered, CacheMode.REPL_SYNC);
+                  cacheManager.defineConfiguration(metadataCacheName, config);
+               }
+
+               if (cacheManager.getCacheConfiguration(dataCacheName) == null) {
+                  Configuration config = getDefaultLuceneCacheConfig(clustered, CacheMode.DIST_SYNC);
+                  cacheManager.defineConfiguration(dataCacheName, config);
+               }
+
+               if (cacheManager.getCacheConfiguration(lockingCacheName) == null) {
+                  Configuration config = getDefaultLuceneCacheConfig(clustered, CacheMode.REPL_SYNC);
+                  cacheManager.defineConfiguration(lockingCacheName, config);
+               }
+            }
 
             searchFactory = createSearchIntegrator(cfg.indexing(), cr, aggregatedClassLoader);
 
@@ -130,6 +158,20 @@ public class LifecycleManager implements ModuleLifecycle {
          cr.registerComponent(ObjectReflectionMatcher.create(new ReflectionEntityNamesResolver(aggregatedClassLoader), searchFactory), ObjectReflectionMatcher.class);
          cr.registerComponent(new QueryEngine<>(cache, isIndexed), QueryEngine.class);
       }
+   }
+
+   private Configuration getDefaultLuceneCacheConfig(boolean clustered, CacheMode cacheMode) {
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+      builder.encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+      builder.encoding().value().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+      if (clustered) {
+         builder.clustering().cacheMode(cacheMode).remoteTimeout(25000)
+               .stateTransfer().awaitInitialTransfer(true).timeout(480000)
+               .locking().useLockStriping(false).lockAcquisitionTimeout(10000).concurrencyLevel(500);
+      } else {
+         builder.simpleCache(true);
+      }
+      return builder.build();
    }
 
    private void addCacheDependencyIfNeeded(String cacheStarting, EmbeddedCacheManager cacheManager, IndexingConfiguration indexingConfiguration) {

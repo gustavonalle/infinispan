@@ -28,6 +28,8 @@ public abstract class AbstractCloseableIteratorCollection<O, K, V> extends Abstr
 
    public AbstractCloseableIteratorCollection(Cache<K, V> cache) {
       this.cache = cache;
+
+//      this.cache = cache.getAdvancedCache().withStorageMediaType();
    }
 
    @Override

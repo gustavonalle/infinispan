@@ -16,6 +16,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.test.Exceptions;
 import org.infinispan.commons.time.TimeService;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -33,7 +34,6 @@ import org.infinispan.interceptors.impl.ContainerFullException;
 import org.infinispan.interceptors.impl.TransactionalExceptionEvictionInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.commons.test.Exceptions;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.transaction.LockingMode;
@@ -142,7 +142,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
             memoryConfigurationBuilder.size(SIZE);
             break;
          case BINARY:
-            // 64 bytes per entry, however tests that add metadata require 16 more even
+            // 144 bytes per entry, however tests that add metadata require 16 more even
             memoryConfigurationBuilder.evictionType(EvictionType.MEMORY).size(convertAmountForStorage(SIZE) + 16);
             break;
          case OFF_HEAP:
@@ -214,7 +214,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
          case OBJECT:
             return expected;
          case BINARY:
-            return expected * (optimisticTransaction ? 64 : 24);
+            return expected * (optimisticTransaction ? 144 : 104);
          case OFF_HEAP:
             return expected * (optimisticTransaction ? UnpooledOffHeapMemoryAllocator.estimateSizeOverhead(51) :
                   UnpooledOffHeapMemoryAllocator.estimateSizeOverhead(33));
@@ -248,7 +248,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
 
    public void testExceptionOnInsert() {
       for (int i = 0; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         cache(0).put(i * 4096, i * 4096);
       }
 
       try {
@@ -261,11 +261,11 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
 
    public void testExceptionOnInsertFunctional() {
       for (int i = 0; i < SIZE; ++i) {
-         cache(0).computeIfAbsent(i, k -> SIZE);
+         cache(0).putIfAbsent(i * 4096, SIZE * 4096);
       }
 
       try {
-         cache(0).computeIfAbsent(-1, k -> SIZE);
+         cache(0).putIfAbsent(-1, SIZE);
          fail("Should have thrown an exception!");
       } catch (Throwable t) {
          Exceptions.assertException(ContainerFullException.class, getMostNestedSuppressedThrowable(t));
@@ -274,7 +274,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
 
    public void testExceptionOnInsertWithRemove() {
       for (int i = 0; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         cache(0).put(i * 4096, i * 4096);
       }
 
       // Now we should have an extra space
@@ -303,7 +303,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
    public void testNoExceptionAfterRollback() throws SystemException, NotSupportedException {
       // We only inserted 9
       for (int i = 1; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         cache(0).put(i * 4096, i * 4096);
       }
 
       assertInterceptorCount();
@@ -311,15 +311,15 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
       TransactionManager tm = cache(0).getAdvancedCache().getTransactionManager();
       tm.begin();
 
-      cache(0).put(0, 0);
+      cache(0).put(4095, 4095);
 
       tm.rollback();
 
       assertInterceptorCount();
 
-      assertNull(cache(0).get(0));
+      assertNull(cache(0).get(4095));
 
-      cache(0).put(SIZE + 1, SIZE + 1);
+      cache(0).put(4096 * SIZE + 1, 4096 * SIZE + 1);
 
       assertInterceptorCount();
 
@@ -370,7 +370,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
          HeuristicRollbackException, HeuristicMixedException {
       // We only inserted 9
       for (int i = 1; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         cache(0).put(i * 4096, i * 4096);
       }
 
       TransactionManager tm = cache(0).getAdvancedCache().getTransactionManager();
@@ -418,7 +418,8 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
       }
       // Note that i starts at 1 so this adds SIZE - 1 entries
       for (int i = 1; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         // Store largers ints as protobuf takes less space then the GlobalMarshaller
+         cache(0).put(i * 4096, i * 4096);
       }
 
       timeService.advance(TimeUnit.SECONDS.toMillis(11));
@@ -460,7 +461,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
       }
       // Note that i starts at 1 so this adds SIZE - 1 entries
       for (int i = 1; i < SIZE; ++i) {
-         cache(0).put(i, i);
+         cache(0).put(i * 4096, i * 4096);
       }
 
       timeService.advance(TimeUnit.SECONDS.toMillis(11));
@@ -528,7 +529,8 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
          LocalizedCacheTopology lct = cache(0).getAdvancedCache().getDistributionManager().getCacheTopology();
          DataConversion dc = cache(0).getAdvancedCache().getKeyDataConversion();
 
-         int minKey = -128;
+         // use positive numbers as protobuf encodes negative numbers as 10-bytes long
+         int minKey = 1;
          int nextKey = minKey;
          Address targetNode;
          Iterator<Address> owners = lct.getWriteOwners(dc.toStorage(nextKey)).iterator();

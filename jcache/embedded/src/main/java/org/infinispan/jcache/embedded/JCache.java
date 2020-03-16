@@ -35,6 +35,7 @@ import org.infinispan.commons.util.ReflectionUtil;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.context.Flag;
+import org.infinispan.encoding.DataConversion;
 import org.infinispan.functional.EntryView;
 import org.infinispan.functional.FunctionalMap.ReadWriteMap;
 import org.infinispan.functional.Param;
@@ -86,6 +87,8 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
    private final ReadWriteMap<K, V> rwMapSkipCacheLoad;
    private final RICacheStatistics stats;
    private final CacheJmxRegistration jmxRegistration;
+   private final DataConversion keyDataConversion;
+   private final DataConversion valueDataConversion;
 
    public JCache(AdvancedCache<K, V> cache, CacheManager cacheManager, ConfigurationAdapter<K, V> c) {
       super(adjustConfiguration(c.getConfiguration(), cache), cacheManager, new JCacheNotifier<>());
@@ -117,6 +120,9 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
 
       if (configuration.isStatisticsEnabled())
          setStatisticsEnabled(true);
+
+      keyDataConversion = cache.getKeyDataConversion();
+      valueDataConversion = cache.getValueDataConversion();
    }
 
    private static <K, V> MutableConfiguration<K, V> adjustConfiguration(MutableConfiguration<K, V> configuration, AdvancedCache<K, V> cache) {
@@ -134,6 +140,7 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
       PersistenceManagerImpl persistenceManager =
             (PersistenceManagerImpl) cache.getComponentRegistry().getComponent(PersistenceManager.class);
       JCacheLoaderAdapter<K, V> adapter = getCacheLoaderAdapter(persistenceManager);
+      adapter.setDataConversion(cache.getKeyDataConversion(), cache.getValueDataConversion());
       adapter.setCacheLoader(jcacheLoader);
       adapter.setExpiryPolicy(expiryPolicy);
    }
@@ -143,6 +150,7 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
       PersistenceManagerImpl persistenceManager =
             (PersistenceManagerImpl) cache.getComponentRegistry().getComponent(PersistenceManager.class);
       JCacheWriterAdapter<K, V> ispnCacheStore = getCacheWriterAdapter(persistenceManager);
+      ispnCacheStore.setDataConversion(cache.getKeyDataConversion(), cache.getValueDataConversion());
       ispnCacheStore.setCacheWriter(jcacheWriter);
    }
 
@@ -220,8 +228,8 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
       // ReadWriteMap.evalMany is not that useful since it forces us to transfer keys
       List<? extends SimpleEntry<? extends K, CompletableFuture<R>>> list =
             keys.stream()
-                .map(k -> new SimpleEntry<>(k, map.eval(k, function)))
-                .collect(Collectors.toList());
+                  .map(k -> new SimpleEntry<>(k, map.eval(k, function)))
+                  .collect(Collectors.toList());
 
       // Wait for all the eval operations to finish before checking for exceptions
       AggregateCompletionStage<Void> stage = CompletionStages.aggregateCompletionStage();
@@ -307,7 +315,7 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
       try {
          ReadWriteMap<K, V> rw = configuration.isReadThrough() ? rwMap : rwMapSkipCacheLoad;
          return rw.eval(key, new Invoke<>(entryProcessor, arguments,
-               !configuration.isStoreByValue())).join();
+               !configuration.isStoreByValue(), keyDataConversion, valueDataConversion)).join();
       } catch (CompletionException e) {
          throw Exceptions.launderException(e);
       } catch (org.infinispan.commons.CacheException e) {
@@ -327,8 +335,8 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
          // intermediary list to force all removes to be invoked before waiting for any
          Iterator<? extends SimpleEntry<? extends K, CompletableFuture<T>>> futures =
                keys.stream()
-                   .map(k -> new SimpleEntry<>(k, rw.eval(k, new Invoke<>(entryProcessor, arguments, !storeByValue))))
-                   .iterator();
+                     .map(k -> new SimpleEntry<>(k, rw.eval(k, new Invoke<>(entryProcessor, arguments, !storeByValue, keyDataConversion, valueDataConversion))))
+                     .iterator();
 
          Map<K, EntryProcessorResult<T>> map = new HashMap<>();
          while (futures.hasNext()) {
@@ -448,11 +456,12 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
             // does not block the commit of other, already persisted entries
             AggregateCompletionStage<Void> stage = CompletionStages.aggregateCompletionStage();
             inputMap.entrySet().stream()
-                    .map(e -> rwMap.eval(e.getKey(), e.getValue(), new Put<>()))
-                    .forEach(stage::dependsOn);
+                  .map(e -> rwMap.eval(e.getKey(), e.getValue(), new Put<>()))
+                  .forEach(stage::dependsOn);
             CompletionStages.join(stage.freeze());
          } else {
-            rwMapSkipCacheLoad.evalMany(inputMap, new Put<>()).forEach(nil -> {});
+            rwMapSkipCacheLoad.evalMany(inputMap, new Put<>()).forEach(nil -> {
+            });
          }
       } catch (CompletionException e) {
          throw Exceptions.launderException(e);
@@ -534,11 +543,12 @@ public class JCache<K, V> extends AbstractJCache<K, V> {
             // does not block the commit of other, already persisted entries
             AggregateCompletionStage<Void> stage = CompletionStages.aggregateCompletionStage();
             keys.stream()
-                .map(k -> rwMapSkipCacheLoad.eval(k, Remove.getInstance()))
-                .forEach(stage::dependsOn);
+                  .map(k -> rwMapSkipCacheLoad.eval(k, Remove.getInstance()))
+                  .forEach(stage::dependsOn);
             CompletionStages.join(stage.freeze());
          } else {
-            rwMapSkipCacheLoad.evalMany(keys, Remove.getInstance()).forEach(b -> {});
+            rwMapSkipCacheLoad.evalMany(keys, Remove.getInstance()).forEach(b -> {
+            });
          }
       } catch (CompletionException e) {
          throw Exceptions.launderException(e);

@@ -3,7 +3,6 @@ package org.infinispan.marshall;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.commons.marshall.MarshallingException;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
@@ -20,12 +19,12 @@ public class MarshalledValueSingleNodeTest extends SingleCacheManagerTest {
       return cm;
    }
 
-   @Test(expectedExceptions = MarshallingException.class)
+   @Test(expectedExceptions = IllegalArgumentException.class)
    public void testNonMarshallableValue() {
       cache.put("Hello", new Object());
    }
 
-   @Test(expectedExceptions = MarshallingException.class)
+   @Test(expectedExceptions = IllegalArgumentException.class)
    public void testNonMarshallableKey() {
       cache.put(new Object(), "Hello");
    }

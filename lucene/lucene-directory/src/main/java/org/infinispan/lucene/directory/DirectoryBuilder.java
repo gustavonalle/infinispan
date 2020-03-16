@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.lucene.impl.DirectoryBuilderImpl;
@@ -42,8 +43,14 @@ public final class DirectoryBuilder {
     * Search
     */
    private static Cache<?, ?> decorateCache(Cache<?, ?> cache) {
-      if (cache == null) return null;
-      return cache.getAdvancedCache().withStorageMediaType();
+      if(cache == null) return null;
+      if(cache.getAdvancedCache().getValueDataConversion().getStorageMediaType().equals(MediaType.APPLICATION_UNKNOWN)) {
+         // This is a custom defined lucene, disable transcoding
+         cache = cache.getAdvancedCache().withStorageMediaType();
+      }
+      return cache;
+//      if (cache == null) return null;
+//      return cache.getAdvancedCache().withStorageMediaType();
    }
 
    private static void validateIndexCaches(String indexName, Cache<?, ?>... caches) {

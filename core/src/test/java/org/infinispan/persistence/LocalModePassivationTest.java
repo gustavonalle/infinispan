@@ -8,14 +8,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
+import org.infinispan.encoding.DataConversion;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.dummy.DummyInMemoryStoreConfigurationBuilder;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
@@ -30,7 +34,8 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.testng.annotations.Test;
 
 /**
- * Test if keys are properly passivated and reloaded in local mode (to ensure fix for ISPN-2712 did no break local mode).
+ * Test if keys are properly passivated and reloaded in local mode (to ensure fix for ISPN-2712 did no break local
+ * mode).
  *
  * @author anistor@redhat.com
  * @since 5.2
@@ -67,6 +72,13 @@ public class LocalModePassivationTest extends SingleCacheManagerTest {
 
       return TestCacheManagerFactory.createCacheManager(builder);
    }
+
+   private static BiFunction<Cache<?, ?>, Object, WrappedByteArray> TO_DATA_CONTAINER =
+         (cache, object) -> (WrappedByteArray) cache.getAdvancedCache().getValueDataConversion().toStorage(object);
+
+   private static BiFunction<Cache<?, ?>, WrappedByteArray, Object> FROM_DATA_CONTAINER =
+         (cache, wrapped) ->  cache.getAdvancedCache().getValueDataConversion().fromStorage(wrapped);
+
 
    public void testStoreAndLoad() throws Exception {
       final int numKeys = 300;
@@ -143,9 +155,10 @@ public class LocalModePassivationTest extends SingleCacheManagerTest {
       assertFalse("Data Container should not have all keys", numKeys == dc.size());
       Set<Object> keySet = flagCache.keySet();
       assertEquals(dc.size(), keySet.size());
+      DataConversion conversion = flagCache.getValueDataConversion();
       for (InternalCacheEntry<Object, Object> entry : dc) {
          Object key = entry.getKey();
-         assertTrue("Key: " + key + " was not found!", keySet.contains(key));
+         assertTrue("Key: " + key + " was not found!", keySet.contains(conversion.fromStorage(key)));
       }
    }
 
@@ -181,9 +194,12 @@ public class LocalModePassivationTest extends SingleCacheManagerTest {
       Set<Map.Entry<Object, Object>> entrySet = flagCache.entrySet();
       assertEquals(dc.size(), entrySet.size());
 
-      Map<Object, Object> map = new HashMap<>(entrySet.size());
+
+      Map<WrappedByteArray, WrappedByteArray> map = new HashMap<>(entrySet.size());
       for (Map.Entry<Object, Object> entry : entrySet) {
-         map.put(entry.getKey(), entry.getValue());
+         WrappedByteArray storedKey = TO_DATA_CONTAINER.apply(flagCache, entry.getKey());
+         WrappedByteArray storedValue = TO_DATA_CONTAINER.apply(flagCache, entry.getValue());
+         map.put(storedKey, storedValue);
       }
 
       for (InternalCacheEntry entry : dc) {
@@ -213,12 +229,16 @@ public class LocalModePassivationTest extends SingleCacheManagerTest {
       AdvancedCache<Object, Object> flagCache = cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
       DataContainer<Object, Object> dc = flagCache.getDataContainer();
       assertFalse("Data Container should not have all keys", numKeys == dc.size());
+
       Collection<Object> values = flagCache.values();
-      assertEquals(dc.size(), values.size());
+      int dataContainerSize = dc.size();
+      assertEquals(dataContainerSize, flagCache.keySet().size());
+      assertEquals(dataContainerSize, flagCache.entrySet().size());
+      assertEquals(dataContainerSize, values.size());
 
       for (InternalCacheEntry<Object, Object> entry : dc) {
          Object dcValue = entry.getValue();
-         assertTrue("Value: " + dcValue + " was not found!", values.contains(dcValue));
+         assertTrue("Value: " + dcValue + " was not found!", values.contains(FROM_DATA_CONTAINER.apply(flagCache, (WrappedByteArray) dcValue)));
       }
    }
 

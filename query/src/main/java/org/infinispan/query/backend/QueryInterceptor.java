@@ -99,8 +99,6 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    private final AtomicBoolean stopping = new AtomicBoolean(false);
    private final ConcurrentMap<GlobalTransaction, Map<Object, Object>> txOldValues;
    private SearchWorkCreator searchWorkCreator = SearchWorkCreator.DEFAULT;
-   private final DataConversion valueDataConversion;
-   private final DataConversion keyDataConversion;
    private final boolean isPersistenceEnabled;
 
    private final InvocationSuccessAction<ClearCommand> processClearCommand = this::processClearCommand;
@@ -117,8 +115,6 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
       this.indexingMode = indexingMode;
       this.isManualIndexing = searchFactory.getIndexingMode() == IndexingMode.MANUAL;
       this.txOldValues = txOldValues;
-      this.valueDataConversion = cache.getValueDataConversion();
-      this.keyDataConversion = cache.getKeyDataConversion();
       this.isPersistenceEnabled = cache.getCacheConfiguration().persistence().usingStores();
       this.cache = cache;
    }
@@ -398,15 +394,19 @@ public final class QueryInterceptor extends DDAsyncInterceptor {
    }
 
    private Object extractValue(Object storedValue) {
-      return valueDataConversion.extractIndexable(storedValue);
+      return this.cache.getValueDataConversion().extractIndexable(storedValue);
    }
 
    private Object extractKey(Object storedKey) {
-      return keyDataConversion.extractIndexable(storedKey);
+      if(storedKey == null) return null;
+      DataConversion valueDataConversion = cache.getValueDataConversion();
+      boolean protoWrapper = valueDataConversion.getWrapper().isFilterable();
+      if(protoWrapper) return cache.getKeyDataConversion().getWrapper().unwrap(storedKey);
+      return this.cache.getKeyDataConversion().extractIndexable(storedKey);
    }
 
    private String keyToString(Object key, int segment) {
-      return keyTransformationHandler.keyToString(extractKey(key), segment);
+      return keyTransformationHandler.keyToString(key, segment);
    }
 
    public KeyTransformationHandler getKeyTransformationHandler() {

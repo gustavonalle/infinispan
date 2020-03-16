@@ -25,6 +25,8 @@ public class LifecycleCallbacks implements ModuleLifecycle {
 
    public static void registerSerializationContext(GlobalComponentRegistry gcr) {
       SerializationContextRegistry ctxRegistry = gcr.getComponent(SerializationContextRegistry.class);
-      ctxRegistry.addContextInitializer(SerializationContextRegistry.MarshallerType.PERSISTENCE, new PersistenceContextInitializerImpl());
+      PersistenceContextInitializerImpl sci = new PersistenceContextInitializerImpl();
+      ctxRegistry.addContextInitializer(SerializationContextRegistry.MarshallerType.PERSISTENCE, sci);
+      ctxRegistry.addContextInitializer(SerializationContextRegistry.MarshallerType.GLOBAL, sci);
    }
 }

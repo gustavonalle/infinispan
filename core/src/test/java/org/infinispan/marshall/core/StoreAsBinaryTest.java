@@ -17,10 +17,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.EncoderCache;
-import org.infinispan.commons.marshall.MarshallingException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.marshall.WrappedBytes;
+import org.infinispan.commons.test.Exceptions;
 import org.infinispan.commons.util.ObjectDuplicator;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -35,7 +35,6 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.persistence.dummy.DummyInMemoryStoreConfigurationBuilder;
-import org.infinispan.commons.test.Exceptions;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestDataSCI;
 import org.infinispan.test.TestingUtil;
@@ -79,9 +78,9 @@ public class StoreAsBinaryTest extends MultipleCacheManagersTest {
       Cache<Object, Object> cache1 = cache(0, "replSync");
       cache(1, "replSync");
 
-      Exceptions.expectException(MarshallingException.class, () -> cache1.put("Hello", new Object()));
+      Exceptions.expectException(IllegalArgumentException.class, () -> cache1.put("Hello", new Object()));
 
-      Exceptions.expectException(MarshallingException.class, () -> cache1.put(new Object(), "Hello"));
+      Exceptions.expectException(IllegalArgumentException.class, () -> cache1.put(new Object(), "Hello"));
    }
 
    public void testReleaseObjectValueReferences() {
@@ -412,7 +411,8 @@ public class StoreAsBinaryTest extends MultipleCacheManagersTest {
       m.put(key3, value3);
       cache(0, "replSync").putAll(m);
 
-      Set<Map.Entry<Object, Object>> entries = cache(0, "replSync").entrySet();
+      Cache<Object, Object> replSync = cache(0, "replSync");
+      Set<Map.Entry<Object, Object>> entries = replSync.entrySet();
       String newString = "new-value";
 
       for (Map.Entry<Object, Object> entry : entries) {

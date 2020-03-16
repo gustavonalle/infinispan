@@ -1,33 +1,40 @@
 package org.infinispan.commons.marshall;
 
+import java.io.Serializable;
+
 /**
  * Interface that describes and object holding onto some bytes
+ *
  * @author wburns
  * @since 9.0
  */
-public interface WrappedBytes {
+public interface WrappedBytes extends Serializable {
    /**
-    * The backing array if there is one otherwise null is returned.  Callers should use
-    * {@link WrappedBytes#backArrayOffset()} to know where to read the bytes from.  This byte[] should never be modified
-    * by the caller
+    * The backing array if there is one otherwise null is returned.  Callers should use {@link
+    * WrappedBytes#backArrayOffset()} to know where to read the bytes from.  This byte[] should never be modified by the
+    * caller
+    *
     * @return the backing byte[] if there is one.
     */
    byte[] getBytes();
 
    /**
     * The offset of where data starts in the backed array.
+    *
     * @return -1 if there is no backed array otherwise &ge; 0 if there is backing array
     */
    int backArrayOffset();
 
    /**
     * The length of the underlying wrapped bytes.  This will always be &ge; 0.
+    *
     * @return how many bytes are available from the underlying wrapped implementation
     */
    int getLength();
 
    /**
     * Retrieves the byte given an offset.  This offset should always be less than {@link WrappedBytes#getLength()}.
+    *
     * @param offset the offset of where to find the byte
     * @return the byte at this position
     */

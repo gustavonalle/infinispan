@@ -15,6 +15,7 @@ import org.infinispan.commands.functional.functions.InjectableComponent;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.marshall.MarshallUtil;
 import org.infinispan.commons.util.Util;
+import org.infinispan.encoding.DataConversion;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.functional.EntryView;
 import org.infinispan.functional.MetaParam;
@@ -28,13 +29,17 @@ public class Invoke<K, V, R> implements Function<EntryView.ReadWriteEntryView<K,
    private final EntryProcessor<K, V, R> processor;
    private final Object[] arguments;
    private final boolean storeByReference;
+   private final DataConversion key;
+   private final DataConversion value;
    private PersistenceMarshaller marshaller;
    private ExpiryPolicy expiryPolicy;
 
-   public Invoke(EntryProcessor<K, V, R> processor, Object[] arguments, boolean storeByReference) {
+   public Invoke(EntryProcessor<K, V, R> processor, Object[] arguments, boolean storeByReference, DataConversion key, DataConversion value) {
       this.processor = processor;
       this.arguments = arguments;
       this.storeByReference = storeByReference;
+      this.key = key;
+      this.value = value;
    }
 
    @Override
@@ -106,12 +111,18 @@ public class Invoke<K, V, R> implements Function<EntryView.ReadWriteEntryView<K,
          output.writeObject(object.processor);
          MarshallUtil.marshallArray(object.arguments, output);
          output.writeBoolean(object.storeByReference);
+         DataConversion.writeTo(output, object.key);
+         DataConversion.writeTo(output, object.value);
       }
 
       @Override
       public Invoke readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         return new Invoke((EntryProcessor) input.readObject(),
-               MarshallUtil.unmarshallArray(input, Util::objectArray), input.readBoolean());
+         EntryProcessor processor = (EntryProcessor) input.readObject();
+         Object[] arguments = MarshallUtil.unmarshallArray(input, Util::objectArray);
+         boolean storeByReference = input.readBoolean();
+         DataConversion key = DataConversion.readFrom(input);
+         DataConversion value = DataConversion.readFrom(input);
+         return new Invoke(processor, arguments, storeByReference, key, value);
       }
    }
 }
