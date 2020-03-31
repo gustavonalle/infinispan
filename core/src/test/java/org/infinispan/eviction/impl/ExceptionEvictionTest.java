@@ -418,7 +418,7 @@ public class ExceptionEvictionTest extends MultipleCacheManagersTest {
       }
       // Note that i starts at 1 so this adds SIZE - 1 entries
       for (int i = 1; i < SIZE; ++i) {
-         // Store largers ints as protobuf takes less space then the GlobalMarshaller
+         // Store larger ints as protobuf takes less space then the GlobalMarshaller
          cache(0).put(i * 4096, i * 4096);
       }
 

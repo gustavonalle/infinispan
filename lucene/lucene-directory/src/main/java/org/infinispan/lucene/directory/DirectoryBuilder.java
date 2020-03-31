@@ -49,8 +49,6 @@ public final class DirectoryBuilder {
          cache = cache.getAdvancedCache().withStorageMediaType();
       }
       return cache;
-//      if (cache == null) return null;
-//      return cache.getAdvancedCache().withStorageMediaType();
    }
 
    private static void validateIndexCaches(String indexName, Cache<?, ?>... caches) {

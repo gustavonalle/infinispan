@@ -145,57 +145,32 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    public static final String OBJECT_NAME = "Cache";
    private static final long PFER_FLAGS = EnumUtil.bitSetOf(FAIL_SILENTLY, FORCE_ASYNCHRONOUS, ZERO_LOCK_ACQUISITION_TIMEOUT, PUT_FOR_EXTERNAL_READ, IGNORE_RETURN_VALUES);
 
-   @Inject
-   protected InvocationContextFactory invocationContextFactory;
-   @Inject
-   protected CommandsFactory commandsFactory;
-   @Inject
-   protected AsyncInterceptorChain invoker;
-   @Inject
-   protected Configuration config;
-   @Inject
-   protected CacheNotifier<K, V> notifier;
-   @Inject
-   protected CacheManagerNotifier cacheManagerNotifier;
-   @Inject
-   protected BatchContainer batchContainer;
-   @Inject
-   protected ComponentRegistry componentRegistry;
-   @Inject
-   protected TransactionManager transactionManager;
-   @Inject
-   protected RpcManager rpcManager;
-   @Inject
-   @ComponentName(KnownComponentNames.INTERNAL_MARSHALLER)
+   @Inject protected InvocationContextFactory invocationContextFactory;
+   @Inject protected CommandsFactory commandsFactory;
+   @Inject protected AsyncInterceptorChain invoker;
+   @Inject protected Configuration config;
+   @Inject protected CacheNotifier<K,V> notifier;
+   @Inject protected CacheManagerNotifier cacheManagerNotifier;
+   @Inject protected BatchContainer batchContainer;
+   @Inject protected ComponentRegistry componentRegistry;
+   @Inject protected TransactionManager transactionManager;
+   @Inject protected RpcManager rpcManager;
+   @Inject @ComponentName(KnownComponentNames.INTERNAL_MARSHALLER)
    protected StreamingMarshaller marshaller;
-   @Inject
-   protected KeyPartitioner keyPartitioner;
-   @Inject
-   EvictionManager<K, V> evictionManager;
-   @Inject
-   InternalExpirationManager<K, V> expirationManager;
-   @Inject
-   InternalDataContainer<K, V> dataContainer;
-   @Inject
-   EmbeddedCacheManager cacheManager;
-   @Inject
-   LockManager lockManager;
-   @Inject
-   DistributionManager distributionManager;
-   @Inject
-   TransactionTable txTable;
-   @Inject
-   AuthorizationManager authorizationManager;
-   @Inject
-   PartitionHandlingManager partitionHandlingManager;
-   @Inject
-   GlobalConfiguration globalCfg;
-   @Inject
-   LocalTopologyManager localTopologyManager;
-   @Inject
-   StateTransferManager stateTransferManager;
-   @Inject
-   InvocationHelper invocationHelper;
+   @Inject protected KeyPartitioner keyPartitioner;
+   @Inject EvictionManager<K,V> evictionManager;
+   @Inject InternalExpirationManager<K, V> expirationManager;
+   @Inject InternalDataContainer<K,V> dataContainer;
+   @Inject EmbeddedCacheManager cacheManager;
+   @Inject LockManager lockManager;
+   @Inject DistributionManager distributionManager;
+   @Inject TransactionTable txTable;
+   @Inject AuthorizationManager authorizationManager;
+   @Inject PartitionHandlingManager partitionHandlingManager;
+   @Inject GlobalConfiguration globalCfg;
+   @Inject LocalTopologyManager localTopologyManager;
+   @Inject StateTransferManager stateTransferManager;
+   @Inject InvocationHelper invocationHelper;
 
    protected Metadata defaultMetadata;
    private final String name;
@@ -791,7 +766,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
       MediaType valueStorage = getValueDataConversion().getStorageMediaType();
       DataConversion newKeyDataConversion = getKeyDataConversion().withRequestMediaType(keyStorage);
       DataConversion newValueDataConversion = getKeyDataConversion().withRequestMediaType(valueStorage);
-      return new EncoderCache<>(this, newKeyDataConversion, newValueDataConversion);
+      return new EncoderCache<>(this,newKeyDataConversion, newValueDataConversion);
    }
 
    @Override
@@ -863,7 +838,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    CacheSet<K> keySet(long explicitFlags) {
       InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
-      KeySetCommand<?, ?> command = commandsFactory.buildKeySetCommand(explicitFlags);
+      KeySetCommand<?,?> command = commandsFactory.buildKeySetCommand(explicitFlags);
       return invocationHelper.invoke(ctx, command);
    }
 
@@ -897,7 +872,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    CacheSet<CacheEntry<K, V>> cacheEntrySet(long explicitFlags, InvocationContext ctx) {
-      EntrySetCommand<?, ?> command = commandsFactory.buildEntrySetCommand(explicitFlags);
+      EntrySetCommand<?,?> command = commandsFactory.buildEntrySetCommand(explicitFlags);
       return invocationHelper.invoke(ctx, command);
    }
 
@@ -908,7 +883,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    CacheSet<Map.Entry<K, V>> entrySet(long explicitFlags) {
       InvocationContext ctx = invocationContextFactory.createInvocationContext(false, UNBOUNDED);
-      EntrySetCommand<?, ?> command = commandsFactory.buildEntrySetCommand(explicitFlags);
+      EntrySetCommand<?,?> command = commandsFactory.buildEntrySetCommand(explicitFlags);
       return invocationHelper.invoke(ctx, command);
    }
 
@@ -987,7 +962,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    <C> CompletionStage<Void> addListenerAsync(ListenerHolder listenerHolder, CacheEventFilter<? super K, ? super V> filter,
-                                              CacheEventConverter<? super K, ? super V, C> converter) {
+                        CacheEventConverter<? super K, ? super V, C> converter) {
       return notifier.addListenerAsync(listenerHolder, filter, converter, null);
    }
 
@@ -1002,7 +977,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public <C> CompletionStage<Void> addListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter,
-                                                     CacheEventConverter<? super K, ? super V, C> converter) {
+                               CacheEventConverter<? super K, ? super V, C> converter) {
       return notifier.addListenerAsync(listener, filter, converter);
    }
 
@@ -1019,21 +994,21 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public <C> CompletionStage<Void> addFilteredListenerAsync(Object listener,
-                                                             CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter,
-                                                             Set<Class<? extends Annotation>> filterAnnotations) {
+                                       CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter,
+                                       Set<Class<? extends Annotation>> filterAnnotations) {
       return notifier.addFilteredListenerAsync(listener, filter, converter, filterAnnotations);
    }
 
    @Override
    public <C> CompletionStage<Void> addStorageFormatFilteredListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter,
-                                                                          CacheEventConverter<? super K, ? super V, C> converter,
-                                                                          Set<Class<? extends Annotation>> filterAnnotations) {
+                                                    CacheEventConverter<? super K, ? super V, C> converter,
+                                                    Set<Class<? extends Annotation>> filterAnnotations) {
       return notifier.addStorageFormatFilteredListenerAsync(listener, filter, converter, filterAnnotations);
    }
 
    <C> CompletionStage<Void> addFilteredListenerAsync(ListenerHolder listener,
-                                                      CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter,
-                                                      Set<Class<? extends Annotation>> filterAnnotations) {
+                                CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter,
+                                Set<Class<? extends Annotation>> filterAnnotations) {
       return notifier.addFilteredListenerAsync(listener, filter, converter, filterAnnotations);
    }
 

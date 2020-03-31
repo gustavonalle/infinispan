@@ -76,11 +76,6 @@ public final class IndexWorker implements Function<EmbeddedCacheManager, Void> {
       ClusteringDependentLogic clusteringDependentLogic = SecurityActions.getClusteringDependentLogic(cache);
       KeyPartitioner keyPartitioner = ComponentRegistryUtils.getKeyPartitioner(cache);
 
-
-//      if(valueDataConversion.getWrapper().isFilterable()) {
-//         cache = cache.withStorageMediaType();
-//      }
-
       if (keys == null || keys.size() == 0) {
          preIndex(indexUpdater);
          if (!skipIndex) {
@@ -98,9 +93,6 @@ public final class IndexWorker implements Function<EmbeddedCacheManager, Void> {
                      value = valueWrapper.wrap(value);
                   }
                   int segment = keyPartitioner.getSegment(storedKey);
-//                  if (value instanceof byte[] && storageType != OBJECT) {
-//                     value = wrapper.wrap(value);
-//                  }
                   if (value != null && indexedTypes.contains(PojoIndexedTypeIdentifier.convertFromLegacy(value.getClass()))) {
                      indexUpdater.updateIndex(next.getKey(), value, segment);
                   }

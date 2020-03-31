@@ -843,8 +843,6 @@ public class EncoderCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
 
    @Override
    public CacheCollection<V> values() {
-      int size = super.values().size();
-      System.out.println(size);
       return new WriteableCacheCollectionMapper<>(super.values(), new EncoderValueMapper<>(valueDataConversion),
             this::valueToStorage, this::keyToStorage);
    }
