@@ -10,14 +10,7 @@
         },
         "socket-bindings":{
             "port-offset":0,
-            "default-interface":"public",
-            "socket-binding":[
-                {
-                    "name":"memcached",
-                    "port":11221,
-                    "interface":"memcached"
-                }
-            ]
+            "default-interface":"public"
         },
         "security":{
             "security-realms":{

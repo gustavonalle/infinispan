@@ -18,8 +18,6 @@
       <socket-bindings default-interface="default" port-offset="${infinispan.socket.binding.port-offset:0}">
          <socket-binding name="default" port="11222"/>
          <socket-binding name="hotrod" port="11223"/>
-         <socket-binding name="memcached" port="11221"/>
-         <socket-binding name="memcached-2" port="12221"/>
          <socket-binding name="rest" port="8080"/>
       </socket-bindings>
 
@@ -135,9 +133,6 @@
                <sni host-name="sni-host-4" security-realm="default"/>
             </encryption>
          </rest-connector>
-         <memcached-connector name="memcached" socket-binding="memcached" io-threads="1" worker-threads="160"
-                              idle-timeout="1" tcp-nodelay="true" tcp-keepalive="true" send-buffer-size="3"
-                              receive-buffer-size="3" cache="string" client-encoding="application/json"/>
       </endpoints>
    </server>
 </infinispan>

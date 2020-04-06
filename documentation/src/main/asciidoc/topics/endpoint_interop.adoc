@@ -13,13 +13,11 @@ Configuring {brandname} to store data with a specific media type affects client 
 
 Although REST clients do support sending and receiving encoded binary data, they are better at handling text formats such as JSON, XML, or plain text.
 
-Memcached text clients can handle String-based keys and byte[] values but cannot negotiate data types with the server. These clients do not offer much flexibility when handling data formats because of the protocol definition.
-
 Java Hot Rod clients are suitable for handling Java objects that represent entities that reside in the cache. Java Hot Rod clients use marshalling operations to serialize and deserialize those objects into byte arrays.
 
 Similarly, non-Java Hot Rod clients, such as the C++, C#, and Javascript clients, are suitable for handling objects in the respective languages. However, non-Java Hot Rod clients can interoperate with Java Hot Rod clients using platform independent data formats.
 
-== REST, Hot Rod, and Memcached Interoperability with Text-Based Storage
+== REST and Hot Rod Interoperability with Text-Based Storage
 
 You can configure key and values with a text-based storage format.
 
@@ -39,16 +37,12 @@ REST clients must also send the correct headers when writing and reading from th
 * Write: `Content-Type: text/plain; charset=UTF-8`
 * Read: `Accept: text/plain; charset=UTF-8`
 
-Memcached clients do not require any configuration to handle text-based formats.
-
 [%header,cols=2*]
 |===
 2+| This configuration is compatible with...
 | REST clients
 | Yes
 | Java Hot Rod clients
-| Yes
-| Memcached clients
 | Yes
 | Non-Java Hot Rod clients
 | No
@@ -58,7 +52,7 @@ Memcached clients do not require any configuration to handle text-based formats.
 | No
 |===
 
-== REST, Hot Rod, and Memcached Interoperability with Custom Java Objects
+== REST and Hot Rod Interoperability with Custom Java Objects
 
 If you store entries in the cache as marshalled, custom Java objects, you should configure the cache with the MediaType of the marshalled storage.
 
@@ -82,10 +76,6 @@ Because REST clients are most suitable for handling text formats, you should use
 
 REST clients can read values for cache entries in XML or JSON format. However, the classes must be available in the server.
 
-To read and write data from Memcached clients, you must use `java.lang.String` for keys. Values are stored and returned as marshalled objects.
-
-Some Java Memcached clients allow data transformers that marshall and unmarshall objects. You can also configure the Memcached server module to encode responses in different formats, such as 'JSON' which is language neutral. This allows non-Java clients to interact with the data even if the storage format for the cache is Java-specific.
-
 [NOTE]
 ====
 Storing Java objects in the cache requires you to deploy entity classes to {ProductName}. See link:#entities_deploy[Deploying Entity Classes].
@@ -97,8 +87,6 @@ Storing Java objects in the cache requires you to deploy entity classes to {Prod
 | REST clients
 | Yes
 | Java Hot Rod clients
-| Yes
-| Memcached clients
 | Yes
 | Non-Java Hot Rod clients
 | No
@@ -191,8 +179,6 @@ REST clients must use a storage format that {brandname} can convert to and from 
 ====
 Storing Java objects in the cache requires you to deploy entity classes to {brandname}. See link:#entities_deploy[Deploying Entity Classes].
 ====
-
-Memcached clients must send and receive a serialized version of the stored POJO, which is a JBoss marshalled payload by default. However if you configure the client encoding in the appropriate Memcached connector, you change the storage format so that Memcached clients use a platform neutral format such as `JSON`.
 
 [%header,cols=2*]
 |===

@@ -90,22 +90,6 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-memcached</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-memcached</artifactId>
-         <scope>test</scope>
-         <type>test-jar</type>
-      </dependency>
-      <dependency>
-         <groupId>net.spy</groupId>
-         <artifactId>spymemcached</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
          <scope>test</scope>

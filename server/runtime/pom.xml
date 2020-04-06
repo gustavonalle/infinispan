@@ -45,11 +45,6 @@
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-memcached</artifactId>
-         <type>jar</type>
-      </dependency>
-      <dependency>
-         <groupId>org.infinispan</groupId>
          <artifactId>infinispan-server-router</artifactId>
          <type>jar</type>
       </dependency>

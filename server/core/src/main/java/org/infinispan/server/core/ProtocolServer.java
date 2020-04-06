@@ -30,8 +30,7 @@ public interface ProtocolServer<C extends ProtocolServerConfiguration> {
 
    /**
     * Gets the encoder for this protocol server. The encoder is responsible for writing back common header responses
-    * back to client. This method can return null if the server has no encoder. You can find an example of the server
-    * that has no encoder in the Memcached server.
+    * back to client. This method can return null if the server has no encoder.
     */
    ChannelOutboundHandler getEncoder();
 

@@ -1,6 +1,5 @@
 package org.infinispan.server.test.junit4;
 
-import java.io.Closeable;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.rest.RestClient;
 import org.infinispan.client.rest.configuration.RestClientConfigurationBuilder;
-import org.infinispan.commons.test.Exceptions;
 import org.infinispan.commons.test.TestResourceTracker;
 import org.infinispan.server.test.core.InfinispanServerDriver;
 import org.infinispan.server.test.core.InfinispanServerTestConfiguration;
@@ -20,8 +18,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.model.Statement;
-
-import net.spy.memcached.MemcachedClient;
 
 /**
  * Creates a cluster of servers to be used for running multiple tests It performs the following tasks:
@@ -145,35 +141,5 @@ public class InfinispanServerRule implements TestRule {
       InetSocketAddress serverAddress = getServerDriver().getServerSocket(n, 11222);
       builder.addServer().host(serverAddress.getHostName()).port(serverAddress.getPort());
       return RestClient.forConfiguration(builder.build());
-   }
-
-   /**
-    * @return a client configured against the first Memcached endpoint exposed by the server
-    */
-   CloseableMemcachedClient newMemcachedClient() {
-      List<InetSocketAddress> addresses = new ArrayList<>();
-      for (int i = 0; i < getServerDriver().getConfiguration().numServers(); i++) {
-         InetSocketAddress unresolved = getServerDriver().getServerSocket(i, 11221);
-         addresses.add(new InetSocketAddress(unresolved.getHostName(), unresolved.getPort()));
-      }
-      MemcachedClient memcachedClient = Exceptions.unchecked(() -> new MemcachedClient(addresses));
-      return new CloseableMemcachedClient(memcachedClient);
-   }
-
-   public static class CloseableMemcachedClient implements Closeable {
-      final MemcachedClient client;
-
-      public CloseableMemcachedClient(MemcachedClient client) {
-         this.client = client;
-      }
-
-      public MemcachedClient getClient() {
-         return client;
-      }
-
-      @Override
-      public void close() {
-         client.shutdown();
-      }
    }
 }

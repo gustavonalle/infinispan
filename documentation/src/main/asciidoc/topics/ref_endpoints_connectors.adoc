@@ -15,8 +15,6 @@ configuration for endpoints such as default socket bindings, security realms,
 and whether clients must present valid TLS certificates.
 * `<hotrod-connector name="hotrod"/>` declares a Hot Rod connector.
 * `<rest-connector name="rest"/>` declares a Hot Rod connector.
-* `<memcached-connector socket-binding="memcached"/>` declares a Memcached
-connector that uses the memcached socket binding.
 
 .Reference
 

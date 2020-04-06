@@ -4,16 +4,7 @@ import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemo
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.startHotRodServer;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT;
-import static org.infinispan.server.core.test.ServerTestingUtil.findFreePort;
-import static org.infinispan.server.core.test.ServerTestingUtil.startProtocolServer;
-import static org.infinispan.server.memcached.test.MemcachedTestingUtil.killMemcachedClient;
-import static org.infinispan.server.memcached.test.MemcachedTestingUtil.killMemcachedServer;
-import static org.infinispan.server.memcached.test.MemcachedTestingUtil.startMemcachedTextServer;
 import static org.infinispan.test.TestingUtil.killCacheManagers;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Collections;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.infinispan.Cache;
@@ -32,16 +23,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.EncoderRegistry;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.rest.RestServer;
-import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
 import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.memcached.MemcachedServer;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-
-import net.spy.memcached.ConnectionFactory;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.DefaultConnectionFactory;
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * Takes care of construction and destruction of caches, servers and clients for each of the endpoints being tested.
@@ -57,13 +40,10 @@ public class EndpointsCacheFactory<K, V> {
    private HotRodServer hotrod;
    private RemoteCacheManager hotrodClient;
    private RestServer rest;
-   private MemcachedServer memcached;
 
    private Cache<K, V> embeddedCache;
    private RemoteCache<K, V> hotrodCache;
    private HttpClient restClient;
-   private MemcachedClient memcachedClient;
-   private Transcoder transcoder;
 
    private final String cacheName;
    private final Marshaller marshaller;
@@ -71,7 +51,6 @@ public class EndpointsCacheFactory<K, V> {
    private final SerializationContextInitializer contextInitializer;
    private final int numOwners;
    private final boolean l1Enable;
-   private final boolean memcachedWithDecoder;
    private int restPort;
 
    EndpointsCacheFactory(CacheMode cacheMode) {
@@ -79,60 +58,39 @@ public class EndpointsCacheFactory<K, V> {
    }
 
    EndpointsCacheFactory(CacheMode cacheMode, SerializationContextInitializer contextInitializer) {
-      this("test", null, cacheMode, DEFAULT_NUM_OWNERS, false, null, null, contextInitializer);
+      this("test", null, cacheMode, DEFAULT_NUM_OWNERS, false, null, contextInitializer);
    }
 
    EndpointsCacheFactory(CacheMode cacheMode, int numOwners, boolean l1Enable) {
-      this("test", null, cacheMode, numOwners, l1Enable, null, null, null);
+      this("test", null, cacheMode, numOwners, l1Enable, null, null);
    }
 
-   EndpointsCacheFactory(CacheMode cacheMode, int numOwners, boolean l1Enable, Encoder encoder) {
-      this("test", null, cacheMode, numOwners, l1Enable, null, encoder, null);
-   }
-
-   EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode) {
+   public EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode) {
       this(cacheName, marshaller, cacheMode, DEFAULT_NUM_OWNERS, null);
    }
 
-   EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, Encoder encoder) {
-      this(cacheName, marshaller, cacheMode, DEFAULT_NUM_OWNERS, false, null, encoder, null);
-   }
-
-
    EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, int numOwners, Encoder encoder) {
-      this(cacheName, marshaller, cacheMode, numOwners, false, null, encoder, null);
-   }
-
-   public EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, Transcoder transcoder) {
-      this(cacheName, marshaller, cacheMode, DEFAULT_NUM_OWNERS, false, transcoder, null, null);
+      this(cacheName, marshaller, cacheMode, numOwners, false, encoder, null);
    }
 
    EndpointsCacheFactory(String cacheName, Marshaller marshaller, CacheMode cacheMode, int numOwners, boolean l1Enable,
-                         Transcoder transcoder, Encoder encoder, SerializationContextInitializer contextInitializer) {
+                         Encoder encoder, SerializationContextInitializer contextInitializer) {
       this.cacheName = cacheName;
       this.marshaller = marshaller;
       this.cacheMode = cacheMode;
       this.numOwners = numOwners;
       this.l1Enable = l1Enable;
-      this.transcoder = transcoder;
-      this.memcachedWithDecoder = transcoder != null;
       this.contextInitializer = contextInitializer;
    }
 
    public EndpointsCacheFactory<K, V> setup() throws Exception {
       createEmbeddedCache();
       createHotRodCache();
-      createRestMemcachedCaches();
       return this;
    }
 
    void addRegexWhiteList(String regex) {
       cacheManager.getClassWhiteList().addRegexps(regex);
-   }
-
-   private void createRestMemcachedCaches() throws Exception {
-      createRestCache();
-      createMemcachedCache();
    }
 
    private void createEmbeddedCache() {
@@ -152,8 +110,8 @@ public class EndpointsCacheFactory<K, V> {
       org.infinispan.configuration.cache.ConfigurationBuilder builder =
             new org.infinispan.configuration.cache.ConfigurationBuilder();
       builder.clustering().cacheMode(cacheMode)
-            .encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
-            .encoding().value().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+             .encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
+             .encoding().value().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
 
       if (cacheMode.isDistributed() && numOwners != DEFAULT_NUM_OWNERS) {
          builder.clustering().hash().numOwners(numOwners);
@@ -196,43 +154,6 @@ public class EndpointsCacheFactory<K, V> {
             : hotrodClient.getCache(cacheName);
    }
 
-   private void createRestCache() {
-      RestServer restServer = startProtocolServer(findFreePort(), p -> {
-         RestServerConfigurationBuilder builder = new RestServerConfigurationBuilder();
-         builder.port(p);
-         rest = new RestServer();
-         rest.start(builder.build(), cacheManager);
-         return rest;
-      });
-      restPort = restServer.getPort();
-      restClient = new HttpClient();
-   }
-
-   private void createMemcachedCache() throws IOException {
-      MediaType clientEncoding = marshaller == null ? MediaType.APPLICATION_OCTET_STREAM : marshaller.mediaType();
-      memcached = startProtocolServer(findFreePort(), p -> {
-         if (memcachedWithDecoder) {
-            return startMemcachedTextServer(cacheManager, p, cacheName, clientEncoding);
-         }
-         return startMemcachedTextServer(cacheManager, p, clientEncoding);
-      });
-      memcachedClient = createMemcachedClient(60000, memcached.getPort());
-   }
-
-   private MemcachedClient createMemcachedClient(long timeout, int port) throws IOException {
-      ConnectionFactory cf = new DefaultConnectionFactory() {
-         @Override
-         public long getOperationTimeout() {
-            return timeout;
-         }
-      };
-
-      if (transcoder != null) {
-         cf = new ConnectionFactoryBuilder(cf).setTranscoder(transcoder).build();
-      }
-      return new MemcachedClient(cf, Collections.singletonList(new InetSocketAddress("127.0.0.1", port)));
-   }
-
    public static void killCacheFactories(EndpointsCacheFactory... cacheFactories) {
       if (cacheFactories != null) {
          for (EndpointsCacheFactory cacheFactory : cacheFactories) {
@@ -246,8 +167,6 @@ public class EndpointsCacheFactory<K, V> {
       killRemoteCacheManager(hotrodClient);
       killServers(hotrod);
       killRestServer(rest);
-      killMemcachedClient(memcachedClient);
-      killMemcachedServer(memcached);
       killCacheManagers(cacheManager);
    }
 
@@ -275,14 +194,6 @@ public class EndpointsCacheFactory<K, V> {
 
    public HttpClient getRestClient() {
       return restClient;
-   }
-
-   public MemcachedClient getMemcachedClient() {
-      return memcachedClient;
-   }
-
-   int getMemcachedPort() {
-      return memcached.getPort();
    }
 
    public String getRestUrl() {

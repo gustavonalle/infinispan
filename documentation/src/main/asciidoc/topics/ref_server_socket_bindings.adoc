@@ -11,12 +11,7 @@ include::config_examples/server_network_socket_bindings.xml[]
 
 * `socket-bindings` declares the default interface and port offset.
 * `default` binds to hotrod and rest connectors to the default port `11222`.
-* `memcached` binds the memcached connector to port `11221`.
 +
-[NOTE]
-====
-The memcached endpoint is disabled by default.
-====
 
 To override the default interface for `socket-binding` declarations, specify the `interface` attribute.
 

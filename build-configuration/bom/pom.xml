@@ -366,11 +366,6 @@
                 <version>${version.infinispan}</version>
             </dependency>
             <!-- TODO should be here? -->
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-server-memcached</artifactId>
-                <version>${version.infinispan}</version>
-            </dependency>
             <!-- TODO should be here? -->
             <dependency>
                 <groupId>org.infinispan</groupId>

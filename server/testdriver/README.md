@@ -76,7 +76,7 @@ public class A {
 
 This `@Rule` must be used in the actual tests. Each test method should use this instance to:
 
-* obtain a client (Hot Rod, REST, Memcached) correctly configured against the running servers
+* obtain a client (Hot Rod, REST) correctly configured against the running servers
 * create a dedicated cache with either a default or supplied configuration named according to the test class/method name
 * correctly clean up client resources after a test is completed 
 

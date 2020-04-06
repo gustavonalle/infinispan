@@ -42,7 +42,7 @@ public class ByteArrayCacheTest extends SingleCacheManagerTest {
             TestCacheManagerFactory.createCacheManager(builder)) {
          @Override
          public void call() {
-            // Mimics Memcached/REST endpoints where only value side is byte array
+            // Mimics REST endpoints where only value side is byte array
             Cache<Integer, byte[]> cache = cm.getCache();
             final Integer key = 2;
             final byte[] value = {1, 2, 3};

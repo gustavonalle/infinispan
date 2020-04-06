@@ -32,7 +32,6 @@ import org.junit.runners.Suite;
       RestOperations.class,
       RestRouter.class,
       RestServerResource.class,
-      MemcachedOperations.class,
       HotRodCounterOperations.class,
       HotRodMultiMapOperations.class,
       HotRodTransactionalCacheOperations.class,

@@ -112,7 +112,6 @@
       <module>persistence/soft-index</module>
       <module>server</module>
       <module>server/core</module>
-      <module>server/memcached</module>
       <module>server/hotrod</module>
       <module>server/rest</module>
       <module>server/router</module>
@@ -346,7 +345,6 @@
       <versionx.net.minidev.accessors-smart>1.1</versionx.net.minidev.accessors-smart>
       <versionx.net.minidev.json-smart>2.2.1</versionx.net.minidev.json-smart>
       <versionx.net.sf.jopt-simple.jopt-simple>5.0.2</versionx.net.sf.jopt-simple.jopt-simple>
-      <versionx.net.spy.spymemcached>2.12.1</versionx.net.spy.spymemcached>
       <versionx.org.aesh.aesh>2.4</versionx.org.aesh.aesh>
       <versionx.org.aesh.aesh-extensions>1.8</versionx.org.aesh.aesh-extensions>
       <versionx.org.aesh.aesh-readline>1.17</versionx.org.aesh.aesh-readline>
@@ -1447,11 +1445,6 @@
             <scope>test</scope>
          </dependency>
          <dependency>
-            <groupId>net.spy</groupId>
-            <artifactId>spymemcached</artifactId>
-            <version>${versionx.net.spy.spymemcached}</version>
-         </dependency>
-         <dependency>
             <groupId>org.aesh</groupId>
             <artifactId>aesh</artifactId>
             <version>${versionx.org.aesh.aesh}</version>
@@ -2457,13 +2450,6 @@
          <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-            <version>${version.infinispan}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-server-memcached</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
             <version>${version.infinispan}</version>

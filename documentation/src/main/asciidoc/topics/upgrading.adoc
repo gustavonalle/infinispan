@@ -1,5 +1,9 @@
 = Upgrading from 10.1 to 11.0
 
+== Memcached
+
+* Memcached was deprecated in 10.1 and now it is removed.
+
 == Cross Site Replication
 
 * The `org.infinispan.xsite.CustomFailurePolicy` interface has been deprecated and it will be replaced by

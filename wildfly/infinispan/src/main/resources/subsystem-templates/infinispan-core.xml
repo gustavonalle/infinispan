@@ -106,7 +106,6 @@
             </distributed-cache-configuration>
 
             <distributed-cache name="default" />
-            <distributed-cache name="memcachedCache" />
          </cache-container>
       </replacement>
    </supplement>

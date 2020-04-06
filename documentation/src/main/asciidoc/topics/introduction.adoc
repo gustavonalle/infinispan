@@ -8,8 +8,7 @@ Because of this, it can be a poor starting point if you are new to {brandname}.
 == What is {brandname} ?
 
 {brandname} is a distributed in-memory key/value data store with optional schema, available under the Apache License 2.0.
-It can be used both as an embedded Java library and as a language-independent service accessed remotely over a variety of
-protocols (Hot Rod, REST, Memcached and WebSockets). It offers advanced functionality such as transactions, events,
+It can be used both as an embedded Java library and as a language-independent service accessed remotely over Hot Rod and REST. It offers advanced functionality such as transactions, events,
 querying and distributed processing as well as numerous integrations with frameworks such as the JCache API standard,
 CDI, Hibernate, WildFly, Spring Cache, Spring Session, Lucene, Spark and Hadoop.
 

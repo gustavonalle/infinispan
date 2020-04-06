@@ -63,10 +63,6 @@
          <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
          <scope>compile</scope>
       </dependency>
-      <dependency>
-         <groupId>net.spy</groupId>
-         <artifactId>spymemcached</artifactId>
-      </dependency>
    </dependencies>
 </project>
 

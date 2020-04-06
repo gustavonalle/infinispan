@@ -92,7 +92,6 @@ The following is an example server configuration:
       <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
          <socket-binding name="hotrod" port="11222"/>
          <socket-binding name="rest" port="8080"/>
-         <socket-binding name="memcached" port="11221"/>
          <socket-binding name="admin" port="9990" interface="admin"/>
       </socket-bindings>
 
@@ -122,7 +121,6 @@ The following is an example server configuration:
 
       <endpoints>
          <hotrod-connector socket-binding="hotrod"/>
-         <memcached-connector socket-binding="memcached"/>
          <rest-connector socket-binding="rest"/>
       </endpoints>
    </server>

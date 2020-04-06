@@ -7,7 +7,6 @@
         "free-memory" => 99958L,
         "log-tail" => [
             "<time_stamp> INFO  [org.infinispan.server.endpoint] (MSC service thread 1-5) DGENDPT10001: HotRodServer listening on 127.0.0.1:11222",
-            "<time_stamp> INFO  [org.infinispan.server.endpoint] (MSC service thread 1-1) DGENDPT10001: MemcachedServer listening on 127.0.0.1:11211",
             "<time_stamp> INFO  [org.jboss.as.clustering.infinispan] (MSC service thread 1-6) DGISPN0001: Started ___protobuf_metadata cache from clustered container",
             "<time_stamp> INFO  [org.jboss.as.clustering.infinispan] (MSC service thread 1-6) DGISPN0001: Started ___script_cache cache from clustered container",
             "<time_stamp> INFO  [org.jboss.as.clustering.infinispan] (MSC service thread 1-5) DGISPN0001: Started ___hotRodTopologyCache cache from clustered container",

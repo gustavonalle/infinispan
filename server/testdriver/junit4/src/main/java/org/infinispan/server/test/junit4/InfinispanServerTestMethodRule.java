@@ -36,8 +36,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import net.spy.memcached.MemcachedClient;
-
 /**
  * @author Tristan Tarrant &lt;tristan@infinispan.org&gt;
  * @since 10.0
@@ -111,10 +109,6 @@ public class InfinispanServerTestMethodRule implements TestRule {
    public CounterManager getCounterManager() {
       RemoteCacheManager remoteCacheManager = registerResource(infinispanServerRule.newHotRodClient());
       return RemoteCounterManagerFactory.asCounterManager(remoteCacheManager);
-   }
-
-   public MemcachedClient getMemcachedClient() {
-      return registerResource(infinispanServerRule.newMemcachedClient()).getClient();
    }
 
    public MBeanServerConnection getJmxConnection(int server) {

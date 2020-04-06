@@ -48,7 +48,7 @@ CacheStores can be used for "warm starts", or simply to ensure data in the grid 
 or even to overﬂow to disk if you really do run out of memory.
 
 *  _Language bindings_ (PHP, Python, Ruby, C, etc.) -
-{brandname} offers support for both the popular memcached protocol - with existing clients for almost every popular programming language - as well as an optimised {brandname}-specific protocol called Hot Rod.
+{brandname} offers support for an optimised {brandname}-specific protocol called Hot Rod.
 This means that {brandname} is not just useful to Java.
 Any major website or application that wants to take advantage of a fast data grid will be able to do so.
 
@@ -475,7 +475,7 @@ There's no bulk get operation in Hot Rod, but the Java Hot Rod client has implem
 === Debugging questions
 
 ==== How can I get {brandname} to show the full byte array? The log only shows partial contents of byte arrays...
-Since version 4.1, whenever {brandname} needs to print byte arrays to logs, these are partially printed in order to avoid unnecessarily printing potentially big byte arrays. This happens in situations where either, {brandname} caches have been configured with lazy deserialization, or your running an Memcached or Hot Rod server.
+Since version 4.1, whenever {brandname} needs to print byte arrays to logs, these are partially printed in order to avoid unnecessarily printing potentially big byte arrays. This happens in situations where either, {brandname} caches have been configured with lazy deserialization, or Hot Rod server.
 So in these cases, only the first 10 positions of the byte array are shown in the logs. If you want {brandname} to show the full byte array in the logs, simply pass the `-Dinfinispan.arrays.debug=true` system property at startup. In the future, this might be controllable at runtime via a JMX call or similar.
 
 Here's an example of log message with a partially displayed byte array:

@@ -20,7 +20,6 @@ import org.infinispan.rest.configuration.RestServerConfiguration;
 import org.infinispan.server.Server;
 import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration;
-import org.infinispan.server.memcached.configuration.MemcachedServerConfiguration;
 import org.infinispan.server.network.NetworkAddress;
 import org.infinispan.server.network.SocketBinding;
 import org.infinispan.server.router.configuration.SinglePortRouterConfiguration;
@@ -56,9 +55,7 @@ public class ServerConfigurationParserTest {
 
       // Socket bindings
       Map<String, SocketBinding> socketBindings = server.socketBindings();
-      assertEquals(5, socketBindings.size());
-      assertEquals(11221, socketBindings.get("memcached").getPort());
-      assertEquals(12221, socketBindings.get("memcached-2").getPort());
+      assertEquals(3, socketBindings.size());
       assertEquals(11222, socketBindings.get("default").getPort());
       assertEquals(11223, socketBindings.get("hotrod").getPort());
       assertEquals(8080, socketBindings.get("rest").getPort());
@@ -81,15 +78,13 @@ public class ServerConfigurationParserTest {
 
       // Connectors
       List<ProtocolServerConfiguration> connectors = server.endpoints().connectors();
-      assertEquals(3, connectors.size());
+      assertEquals(2, connectors.size());
       assertTrue(connectors.get(0) instanceof HotRodServerConfiguration);
       assertTrue(connectors.get(1) instanceof RestServerConfiguration);
-      assertTrue(connectors.get(2) instanceof MemcachedServerConfiguration);
 
       // Ensure endpoints are bound to the interfaces
       SinglePortRouterConfiguration singlePortRouter = server.endpoints().singlePortRouter();
       assertEquals(socketBindings.get("default").getAddress().getAddress().getHostAddress(), singlePortRouter.host());
       assertEquals(socketBindings.get("default").getPort(), singlePortRouter.port());
-      assertEquals(socketBindings.get("memcached").getPort(), server.endpoints().connectors().get(2).port());
    }
 }

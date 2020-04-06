@@ -58,7 +58,7 @@ public class EmbeddedRestHotRodTest extends AbstractInfinispanTest {
 
    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-   EndpointsCacheFactory<String, Object> cacheFactory;
+   protected EndpointsCacheFactory<String, Object> cacheFactory;
 
    @BeforeClass
    protected void setup() throws Exception {

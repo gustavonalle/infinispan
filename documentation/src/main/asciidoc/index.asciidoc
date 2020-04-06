@@ -27,12 +27,11 @@ Infinispan Server::
 * link:titles/server/server.html[Infinispan Server Guide]
 * link:titles/cli/cli.html[Using the Command Line Interface]
 
-Hot Rod, REST, and Memcached::
+Hot Rod, REST::
 
 * link:titles/hotrod_java/hotrod_java.html[Hot Rod Java Client Guide]
 * link:titles/hotrod_protocol/hotrod_protocol.html[Hot Rod Protocol Reference]
 * link:titles/rest/rest.html[Infinispan REST API]
-* link:titles/memcached/memcached.html[Memcached Client Guide]
 
 APIs, Marshalling, Locks, Counters, Indexing and Querying, and more::
 

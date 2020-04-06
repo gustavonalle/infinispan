@@ -72,7 +72,7 @@ public class JsonSerializationTest {
       assertEquals(0, socketBindings.get("port-offset").asInt());
 
       JsonNode socketBinding = socketBindings.get("socket-binding");
-      assertEquals(5, socketBinding.size());
+      assertEquals(3, socketBinding.size());
 
       Iterator<JsonNode> bindings = socketBinding.elements();
       JsonNode binding1 = bindings.next();
@@ -82,14 +82,8 @@ public class JsonSerializationTest {
       assertEquals("hotrod", binding2.get("name").asText());
       assertEquals(11223, binding2.get("port").asInt());
       JsonNode binding3 = bindings.next();
-      assertEquals("memcached", binding3.get("name").asText());
-      assertEquals(11221, binding3.get("port").asInt());
-      JsonNode binding4 = bindings.next();
-      assertEquals("memcached-2", binding4.get("name").asText());
-      assertEquals(12221, binding4.get("port").asInt());
-      JsonNode binding5 = bindings.next();
-      assertEquals("rest", binding5.get("name").asText());
-      assertEquals(8080, binding5.get("port").asInt());
+      assertEquals("rest", binding3.get("name").asText());
+      assertEquals(8080, binding3.get("port").asInt());
 
       JsonNode securityRealms = serverNode.get("security").get("security-realms");
       assertEquals(1, securityRealms.size());
@@ -196,10 +190,8 @@ public class JsonSerializationTest {
 
       JsonNode hotrodConnector = endpoints.get("hotrod-connector");
       JsonNode restConnector = endpoints.get("rest-connector");
-      JsonNode memcachedConnector = endpoints.get("memcached-connector");
       assertHotRodConnector(hotrodConnector);
       assertRestConnector(restConnector);
-      assertMemcachedConnector(memcachedConnector);
    }
 
    private void assertHotRodConnector(JsonNode hotrodConnector) {
@@ -320,25 +312,6 @@ public class JsonSerializationTest {
       JsonNode sni2 = elements.next();
       assertEquals("sni-host-4", sni2.get("host-name").asText());
       assertEquals("default", sni2.get("security-realm").asText());
-   }
-
-   private void assertMemcachedConnector(JsonNode memcachedConnector) {
-      assertEquals("memcached", memcachedConnector.get("name").asText());
-      assertEquals("memcached", memcachedConnector.get("socket-binding").asText());
-      assertEquals(1, memcachedConnector.get("io-threads").asInt());
-      assertEquals(160, memcachedConnector.get("worker-threads").asInt());
-      assertEquals(1, memcachedConnector.get("idle-timeout").asInt());
-      assertTrue(memcachedConnector.get("tcp-nodelay").asBoolean());
-      assertTrue(memcachedConnector.get("tcp-keepalive").asBoolean());
-      assertEquals(3, memcachedConnector.get("send-buffer-size").asInt());
-      assertEquals(3, memcachedConnector.get("receive-buffer-size").asInt());
-      assertEquals("string", memcachedConnector.get("cache").asText());
-      assertEquals("application/json", memcachedConnector.get("client-encoding").asText());
-   }
-
-   private void assertMemcachedConnector2(JsonNode memcachedConnector) {
-      assertEquals("memcached-2", memcachedConnector.get("name").asText());
-      assertEquals("memcached-2", memcachedConnector.get("socket-binding").asText());
    }
 
    private void assertStringArray(List<String> expected, JsonNode actual) {

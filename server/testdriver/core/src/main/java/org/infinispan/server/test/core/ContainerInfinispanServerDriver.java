@@ -195,7 +195,6 @@ public class ContainerInfinispanServerDriver extends AbstractInfinispanServerDri
                .entryPoint(args.toArray(new String[]{}))
                .expose(
                      11222, // Protocol endpoint
-                     11221, // Memcached endpoint
                      7800,  // JGroups TCP
                      43366, // JGroups MPING
                      9999   // JMX Remoting

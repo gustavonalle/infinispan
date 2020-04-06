@@ -50,7 +50,6 @@ public class RestServerResource {
       assertEquals("default", security.get("security-realms").get("security-realm").get("name").asText());
       assertEquals("hotrod", endpoints.get("hotrod-connector").get("name").asText());
       assertEquals("rest", endpoints.get("rest-connector").get("name").asText());
-      assertEquals("memcachedCache", endpoints.get("memcached-connector").get("cache").asText());
    }
 
    @Test

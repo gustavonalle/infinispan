@@ -3,7 +3,6 @@
    <transport/>
    <global-state/>
    <distributed-cache name="default"/>
-   <distributed-cache name="memcachedCache"/>
    <distributed-cache name="namedCache"/>
  </cache-container>
 </subsystem>

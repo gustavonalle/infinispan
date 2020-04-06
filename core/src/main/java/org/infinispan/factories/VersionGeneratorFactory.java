@@ -10,7 +10,7 @@ import org.infinispan.factories.scopes.Scopes;
 
 /**
  * Version generator component factory. Version generators are used for situations where version or ids are needed, e.g.
- * data versioning, transaction recovery, or hotrod/memcached support.
+ * data versioning, transaction recovery, or hotrod support.
  *
  * @author Manik Surtani
  * @author Galder Zamarreño

@@ -13,7 +13,6 @@ public final class ExternalizerIds {
    private ExternalizerIds() { }
 
    public static final int SERVER_ENTRY_VERSION = 1100;
-   public static final int MEMCACHED_METADATA = 1101;
    public static final int TOPOLOGY_ADDRESS = 1102;
    public static final int TOPOLOGY_VIEW = 1103;
    public static final int SINGLE_HOMED_SERVER_ADDRESS = 1104;
