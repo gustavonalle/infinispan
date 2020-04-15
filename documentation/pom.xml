@@ -173,7 +173,6 @@
                                 <schemaversion>${schemaVersion}</schemaversion>
                                 <brandname>${infinispan.brand.name}</brandname>
                                 <fullbrandname>${infinispan.brand.name}</fullbrandname>
-                                <wildflybrandname>${wildfly.brand.name}</wildflybrandname>
                                 <moduleprefix>${infinispan.module.slot.prefix}</moduleprefix>
                                 <infinispanslot>${infinispanslot}</infinispanslot>
                                 <defaults>${defaults.file}</defaults>
