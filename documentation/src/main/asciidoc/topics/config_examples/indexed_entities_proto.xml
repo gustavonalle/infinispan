@@ -1,0 +1,12 @@
+<infinispan>
+  <cache-container default-cache="default">
+    <replicated-cache name="default">
+      <indexing>
+        <indexed-entities>
+          <indexed-entity>book_sample.Book</indexed-entity>
+          <indexed-entity>book_sample.Author</indexed-entity>
+        </indexed-entities>
+      </indexing>
+    </replicated-cache>
+  </cache-container>
+</infinispan>
