@@ -1,9 +1,6 @@
 package org.infinispan.client.hotrod.impl.operations;
 
-import static java.util.Arrays.stream;
-
 import java.net.SocketAddress;
-import java.util.BitSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +38,7 @@ public class IterationStartOperation extends RetryOnFailureOperation<IterationSt
 
    @Override
    protected Transport getTransport(int retryCount, Set<SocketAddress> failedServers) {
-      return transportFactory.getTransport(failedServers, cacheName);
+      return transportFactory.getTransport(segments, failedServers, cacheName);
    }
 
    @Override

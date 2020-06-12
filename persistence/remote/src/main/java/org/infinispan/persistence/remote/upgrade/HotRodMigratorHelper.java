@@ -1,6 +1,7 @@
 package org.infinispan.persistence.remote.upgrade;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,10 @@ public class HotRodMigratorHelper {
          subLists.get(i % parts).add(list.get(i));
       }
       return subLists;
+   }
+
+   public static void main(String[] args) {
+      System.out.println(split(Arrays.asList(1,2,3,4,5,6,7,8,9,10,11,12,13), 12));
    }
 
    static void awaitTermination(ExecutorService executorService) {

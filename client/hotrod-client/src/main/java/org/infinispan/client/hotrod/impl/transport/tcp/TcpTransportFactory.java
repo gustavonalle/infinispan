@@ -304,6 +304,17 @@ public class TcpTransportFactory implements TransportFactory {
    }
 
    @Override
+   public Transport getTransport(Set<Integer> segments, Set<SocketAddress> failedServers, byte[] cacheName) {
+      SocketAddress server;
+      synchronized (lock) {
+         Optional<SocketAddress> hashAwareServer = topologyInfo.getHashAwareServer(segments, cacheName);
+         server = hashAwareServer.orElse(getNextServer(failedServers, cacheName));
+      }
+      System.out.println("Picked " + server);
+      return borrowTransportFromPool(server);
+   }
+
+   @Override
    public void releaseTransport(Transport transport) {
       if (transport.isBusy()) {
          if (trace) {

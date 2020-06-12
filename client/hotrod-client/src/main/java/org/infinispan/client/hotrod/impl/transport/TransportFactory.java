@@ -59,6 +59,8 @@ public interface TransportFactory {
 
    Transport getTransport(Object key, Set<SocketAddress> failedServers, byte[] cacheName);
 
+   Transport getTransport(Set<Integer> segments, Set<SocketAddress> failedServers, byte[] cacheName);
+
    boolean isTcpNoDelay();
 
    boolean isTcpKeepAlive();
