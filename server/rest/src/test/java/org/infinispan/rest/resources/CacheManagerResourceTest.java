@@ -53,6 +53,7 @@ public class CacheManagerResourceTest extends AbstractRestResourceTest {
             new CacheManagerResourceTest().withSecurity(true),
             new CacheManagerResourceTest().withSecurity(false)
       };
+
    }
 
    @Override

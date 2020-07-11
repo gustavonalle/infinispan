@@ -1,29 +1,42 @@
 package org.infinispan.commons.configuration;
 
-import static org.infinispan.commons.configuration.Json.factory;
+import static org.infinispan.commons.dataconversion.impl.Json.DefaultFactory;
+import static org.infinispan.commons.dataconversion.impl.Json.Factory;
+import static org.infinispan.commons.dataconversion.impl.Json.factory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
+import org.infinispan.commons.dataconversion.JsonSerialization;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.dataconversion.impl.Json;
 
 /**
- * Custom {@link Json.Factory} to handle cache attribute values.
+ * Custom {@link Factory} to handle internal objects.
  *
  * @since 10.0
  */
-public class JsonCustomFactory extends Json.DefaultFactory {
+public class JsonCustomFactory extends DefaultFactory {
 
    private final JsonWriter writer = new JsonWriter();
 
    @Override
    public Json make(Object anything) {
       if (anything == null)
-         return Json.topnull;
-      else if (anything instanceof Json)
+         return super.make(null);
+      else if (anything instanceof Properties) {
+         Properties properties = (Properties) anything;
+         Json O = object();
+         for (Map.Entry<?, ?> x : properties.entrySet())
+            O.set(x.getKey().toString(), factory().make(x.getValue()));
+         return O;
+      } else if (anything instanceof Json)
          return (Json) anything;
       else if (anything instanceof String)
          return factory().string((String) anything);
+      else if (anything instanceof JsonSerialization)
+         return ((JsonSerialization) anything).toJson();
       else if (anything instanceof Collection<?>) {
          Json L = array();
          for (Object x : (Collection<?>) anything)
@@ -71,6 +84,6 @@ public class JsonCustomFactory extends Json.DefaultFactory {
             for (double b : (double[]) anything) A.add(b);
          return A;
       } else
-         return make(anything.getClass().getName());
+         return factory().string(anything.getClass().getName());
    }
 }

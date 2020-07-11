@@ -80,6 +80,7 @@ import org.infinispan.client.rest.configuration.RestClientConfigurationBuilder;
 import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.commons.api.CacheContainerAdmin.AdminFlag;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.dataconversion.impl.Json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -170,17 +171,21 @@ public class RestConnection implements Connection, Closeable {
             return (T) response.getBodyAsStream();
          } else if (returnClass == String.class) {
             if (MediaType.APPLICATION_JSON.equals(response.contentType())) {
-               Object object = mapper.readValue(response.getBody(), Object.class);
-               return (T) mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+               Json json = Json.read(response.getBody());
+               return (T) json.toPrettyString();
             } else {
                return (T) response.getBody();
             }
          } else {
-            return mapper.readValue(response.getBody(), returnClass);
+            if (returnClass == Map.class) {
+               return (T) Json.read(response.getBody()).asMap();
+            }
+            if (returnClass == List.class) {
+               return (T) Json.read(response.getBody()).asList();
+            }
          }
-      } else {
-         return null;
       }
+      return null;
    }
 
    private RestResponse handleResponseStatus(RestResponse response) throws IOException {

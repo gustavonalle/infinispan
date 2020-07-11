@@ -23,6 +23,7 @@ import org.infinispan.client.rest.RestCacheManagerClient;
 import org.infinispan.client.rest.RestClient;
 import org.infinispan.client.rest.configuration.RestClientConfiguration;
 import org.infinispan.client.rest.configuration.RestClientConfigurationBuilder;
+import org.infinispan.commons.test.TestResourceTracker;
 import org.infinispan.configuration.cache.BackupConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -30,7 +31,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.ControlledTransport;
 import org.infinispan.rest.helper.RestServerHelper;
-import org.infinispan.commons.test.TestResourceTracker;
 import org.infinispan.xsite.AbstractMultipleSitesTest;
 import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
 import org.testng.annotations.AfterClass;
@@ -53,8 +53,8 @@ public class XSiteResourceTest extends AbstractMultipleSitesTest {
    private static final String CACHE_2 = "CACHE_2";
    private static final String CACHE_MANAGER = "default";
 
-   private Map<String, RestServerHelper> restServerPerSite = new HashMap<>(2);
-   private Map<String, RestClient> clientPerSite = new HashMap<>(2);
+   private final Map<String, RestServerHelper> restServerPerSite = new HashMap<>(2);
+   private final Map<String, RestClient> clientPerSite = new HashMap<>(2);
 
    protected int defaultNumberOfSites() {
       return 3;
@@ -401,9 +401,9 @@ public class XSiteResourceTest extends AbstractMultipleSitesTest {
       // LON backs-up to SFO, NYC
       ConfigurationBuilder builder = defaultConfigurationForSite(0);
       builder.sites().addBackup().site(siteName(1)).strategy(BackupConfiguration.BackupStrategy.SYNC)
-             .stateTransfer().chunkSize(5);
+            .stateTransfer().chunkSize(5);
       builder.sites().addBackup().site(siteName(2)).strategy(BackupConfiguration.BackupStrategy.SYNC)
-             .stateTransfer().chunkSize(5);
+            .stateTransfer().chunkSize(5);
       defineInSite(site(0), CACHE_1, builder.build());
       defineInSite(site(0), CACHE_2, builder.build());
       defineInSite(site(2), CACHE_1, builder.build());
@@ -416,9 +416,9 @@ public class XSiteResourceTest extends AbstractMultipleSitesTest {
       // NYC backs up to LON, SFO
       builder = defaultConfigurationForSite(1);
       builder.sites().addBackup().site(siteName(0)).strategy(BackupConfiguration.BackupStrategy.SYNC)
-             .stateTransfer().chunkSize(5);
+            .stateTransfer().chunkSize(5);
       builder.sites().addBackup().site(siteName(2)).strategy(BackupConfiguration.BackupStrategy.SYNC)
-             .stateTransfer().chunkSize(5);
+            .stateTransfer().chunkSize(5);
       defineInSite(site(1), CACHE_1, builder.build());
       defineInSite(site(1), CACHE_2, builder.build());
       site(1).waitForClusterToForm(CACHE_1);
