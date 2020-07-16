@@ -2,9 +2,12 @@ package org.infinispan.rest;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static java.util.Collections.singletonMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -14,6 +17,7 @@ import java.util.concurrent.CompletionStage;
 
 import javax.security.auth.Subject;
 
+import org.infinispan.client.rest.RestCacheManagerClient;
 import org.infinispan.client.rest.RestClient;
 import org.infinispan.client.rest.RestResponse;
 import org.infinispan.client.rest.configuration.RestClientConfigurationBuilder;
@@ -24,6 +28,7 @@ import org.infinispan.rest.authentication.impl.BasicAuthenticator;
 import org.infinispan.rest.helper.RestServerHelper;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
+import org.mockito.Mockito;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -35,11 +40,11 @@ public class AuthenticationTest extends AbstractInfinispanTest {
    private static final String URL = String.format("/rest/v2/caches/%s/%s", "default", "test");
    private RestClient client;
    private RestServerHelper restServer;
-
+   private SecurityDomain securityDomainMock;
 
    @BeforeMethod(alwaysRun = true)
    public void beforeMethod() {
-      SecurityDomain securityDomainMock = mock(SecurityDomain.class);
+      securityDomainMock = mock(SecurityDomain.class);
       Subject user = TestingUtil.makeSubject("test");
       doReturn(user).when(securityDomainMock).authenticate(eq("test"), eq("test"));
       BasicAuthenticator basicAuthenticator = new BasicAuthenticator(securityDomainMock, REALM);
@@ -52,6 +57,7 @@ public class AuthenticationTest extends AbstractInfinispanTest {
 
    @AfterMethod(alwaysRun = true)
    public void afterMethod() throws IOException {
+      Mockito.reset(securityDomainMock);
       restServer.clear();
       if (restServer != null) {
          restServer.stop();
@@ -91,5 +97,27 @@ public class AuthenticationTest extends AbstractInfinispanTest {
       ResponseAssertion.assertThat(response).isOk();
       ResponseAssertion.assertThat(response).hasContentType("text/plain");
       ResponseAssertion.assertThat(response).hasReturnedText("HEALTHY");
+   }
+
+   @Test
+   public void shouldReuseAuthTokens() throws IOException {
+      RestClientConfigurationBuilder configurationBuilder = new RestClientConfigurationBuilder();
+      configurationBuilder.addServer().host(restServer.getHost()).port(restServer.getPort());
+      configurationBuilder.security().authentication().username("user").password("user");
+
+      try (RestClient client = RestClient.forConfiguration(configurationBuilder.build())) {
+         RestCacheManagerClient cacheManagerClient = client.cacheManager("default");
+
+         CompletionStage<RestResponse> firstRequest = cacheManagerClient.info();
+         ResponseAssertion.assertThat(firstRequest).isOk();
+
+         CompletionStage<RestResponse> secondRequest = cacheManagerClient.info();
+         ResponseAssertion.assertThat(secondRequest).isOk();
+
+         CompletionStage<RestResponse> thirdRequest = cacheManagerClient.info();
+         ResponseAssertion.assertThat(thirdRequest).isOk();
+
+         verify(securityDomainMock, times(1)).authenticate(anyString(), anyString());
+      }
    }
 }
