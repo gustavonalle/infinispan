@@ -4,7 +4,9 @@ package org.infinispan.commons.dataconversion;
  * Used to convert data between read/write format and storage format.
  *
  * @since 9.1
+ * @deprecated Since 12.0, to be removed in 15.0. Use {@link Transcoder} for all data conversions instead.
  */
+@Deprecated
 public interface Encoder {
 
    /**

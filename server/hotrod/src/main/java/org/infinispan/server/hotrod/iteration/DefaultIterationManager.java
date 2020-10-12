@@ -24,7 +24,6 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.BaseCacheStream;
 import org.infinispan.Cache;
 import org.infinispan.CacheStream;
-import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.time.TimeService;
@@ -174,7 +173,7 @@ public class DefaultIterationManager implements IterationManager {
          MediaType filterMediaType = customFilter.format();
 
          if (filterMediaType != null && filterMediaType.equals(storageMediaType)) {
-            iterationCache = advancedCache.withEncoding(IdentityEncoder.class).withMediaType(filterMediaType, filterMediaType);
+            iterationCache = advancedCache.withMediaType(filterMediaType, filterMediaType);
          }
          stream = iterationCache.cacheEntrySet().stream();
          if (segments != null) {

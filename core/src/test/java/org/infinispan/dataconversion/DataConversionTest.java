@@ -1,9 +1,12 @@
 package org.infinispan.dataconversion;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_OBJECT;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_PROTOSTREAM;
+import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_SERIALIZED_OBJECT_TYPE;
 import static org.infinispan.commons.dataconversion.MediaType.APPLICATION_XML;
+import static org.infinispan.dataconversion.GzipTranscoder.APPLICATION_GZIP_TYPE;
 import static org.infinispan.notifications.Listener.Observation.POST;
 import static org.infinispan.test.TestingUtil.withCacheManager;
 import static org.infinispan.test.fwk.TestCacheManagerFactory.createCacheManager;
@@ -20,14 +23,11 @@ import java.util.Map;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commands.write.PutKeyValueCommand;
-import org.infinispan.commons.dataconversion.IdentityEncoder;
-import org.infinispan.commons.dataconversion.IdentityWrapper;
-import org.infinispan.commons.dataconversion.JavaSerializationEncoder;
 import org.infinispan.commons.dataconversion.MediaType;
-import org.infinispan.commons.dataconversion.UTF8Encoder;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.ContentTypeConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.DataContainer;
@@ -94,36 +94,34 @@ public class DataConversionTest extends AbstractInfinispanTest {
    }
 
    @Test
-   public void testUTF8Encoders() {
+   public void testUTF8Encoding() {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
+      cfg.encoding().mediaType(MediaType.TEXT_PLAIN_TYPE);
 
-      withCacheManager(new CacheManagerCallable(
-            createCacheManager(TestDataSCI.INSTANCE, cfg)) {
-
-         String charset = "UTF-8";
+      withCacheManager(new CacheManagerCallable(createCacheManager(TestDataSCI.INSTANCE, cfg)) {
 
          private byte[] asUTF8Bytes(String value) throws UnsupportedEncodingException {
-            return value.getBytes(charset);
+            return value.getBytes(UTF_8);
          }
 
          @Override
          public void call() throws IOException {
-            Cache<byte[], byte[]> cache = cm.getCache();
+            Cache<Object, Object> cache = cm.getCache();
+            AdvancedCache<Object, Object> storageCache = cache.getAdvancedCache().withStorageMediaType();
 
             String keyUnencoded = "1";
             String valueUnencoded = "value";
-            cache.put(asUTF8Bytes(keyUnencoded), asUTF8Bytes(valueUnencoded));
+            storageCache.put(asUTF8Bytes(keyUnencoded), asUTF8Bytes(valueUnencoded));
 
-            // Read using different valueEncoder
-            Cache utf8Cache = cache.getAdvancedCache().withEncoding(UTF8Encoder.class);
-            assertEquals(utf8Cache.get(keyUnencoded), valueUnencoded);
+            // Read using different request format
+            assertEquals(cache.get(keyUnencoded), valueUnencoded);
 
-            // Write with one valueEncoder and read with another
+            // Write with one format and read with another
             String key2Unencoded = "2";
             String value2Unencoded = "anotherValue";
-            utf8Cache.put(key2Unencoded, value2Unencoded);
+            cache.put(key2Unencoded, value2Unencoded);
 
-            assertEquals(cache.get(asUTF8Bytes(key2Unencoded)), asUTF8Bytes(value2Unencoded));
+            assertEquals(storageCache.get(asUTF8Bytes(key2Unencoded)), asUTF8Bytes(value2Unencoded));
          }
       });
    }
@@ -166,6 +164,7 @@ public class DataConversionTest extends AbstractInfinispanTest {
    @Test
    public void testConversionWithListeners() {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
+      cfg.encoding().mediaType(APPLICATION_SERIALIZED_OBJECT_TYPE);
 
       withCacheManager(new CacheManagerCallable(
             createCacheManager(TestDataSCI.INSTANCE, cfg)) {
@@ -174,7 +173,7 @@ public class DataConversionTest extends AbstractInfinispanTest {
             Cache<String, Person> cache = cm.getCache();
             cm.getClassAllowList().addClasses(Person.class);
             // Obtain cache with custom valueEncoder
-            Cache storeMarshalled = cache.getAdvancedCache().withEncoding(JavaSerializationEncoder.class);
+            Cache storeMarshalled = cache.getAdvancedCache();
 
             // Add a listener
             SimpleListener simpleListener = new SimpleListener();
@@ -298,23 +297,22 @@ public class DataConversionTest extends AbstractInfinispanTest {
       });
    }
 
-   public void testWithCustomEncoder() {
-      withCacheManager(new CacheManagerCallable(
-            createCacheManager(TestDataSCI.INSTANCE, new ConfigurationBuilder())) {
+   public void testWithCustomTranscoder() {
+      withCacheManager(new CacheManagerCallable(createCacheManager(TestDataSCI.INSTANCE, new ConfigurationBuilder())) {
+
          @Override
          public void call() {
             EncoderRegistry encoderRegistry = TestingUtil.extractGlobalComponent(cm, EncoderRegistry.class);
-            encoderRegistry.registerEncoder(new GzipEncoder());
+            encoderRegistry.registerTranscoder(new GzipTranscoder());
 
-            AdvancedCache<String, String> cache = cm.<String, String>getCache().getAdvancedCache();
-
-            AdvancedCache<String, String> compressingCache = (AdvancedCache<String, String>) cache.withEncoding(IdentityEncoder.class, GzipEncoder.class);
+            ContentTypeConfigurationBuilder cacheConfig = new ConfigurationBuilder().encoding().value().mediaType(APPLICATION_GZIP_TYPE);
+            Cache<String, Object> compressingCache = cm.createCache("compressed", cacheConfig.build());
 
             compressingCache.put("297931749", "0412c789a37f5086f743255cfa693dd502b6a2ecb2ceee68380ff58ad15e7b56");
 
             assertEquals(compressingCache.get("297931749"), "0412c789a37f5086f743255cfa693dd502b6a2ecb2ceee68380ff58ad15e7b56");
 
-            Object value = compressingCache.withEncoding(IdentityEncoder.class).get("297931749");
+            Object value = compressingCache.getAdvancedCache().withStorageMediaType().get("297931749");
             assert value instanceof byte[];
          }
       });
@@ -347,11 +345,6 @@ public class DataConversionTest extends AbstractInfinispanTest {
             ComponentRegistry compatRegistry = compat.getComponentRegistry();
             testWith(compat.getKeyDataConversion(), compatRegistry);
             testWith(compat.getValueDataConversion(), compatRegistry);
-
-            AdvancedCache<?, ?> wrapped = compat.withEncoding(IdentityEncoder.class).withWrapping(IdentityWrapper.class);
-            ComponentRegistry wrappedRegistry = wrapped.getComponentRegistry();
-            testWith(wrapped.getKeyDataConversion(), wrappedRegistry);
-            testWith(wrapped.getValueDataConversion(), wrappedRegistry);
          }
       });
    }
@@ -379,7 +372,8 @@ public class DataConversionTest extends AbstractInfinispanTest {
 
       private final int i;
 
-      @Inject ComponentRef<AdvancedCache<?, ?>> cache;
+      @Inject
+      ComponentRef<AdvancedCache<?, ?>> cache;
 
       TestInterceptor(int i) {
          this.i = i;

@@ -9,7 +9,9 @@ import org.infinispan.commons.util.Util;
  * Encoder to/from UTF-8 content using the java string encoding mechanism.
  *
  * @since 9.1
+ * @deprecated Since 12.0, to be removed in 15.0. Use {@link Transcoder} for data conversions.
  */
+@Deprecated
 public class UTF8Encoder implements Encoder {
 
    public static final UTF8Encoder INSTANCE = new UTF8Encoder();

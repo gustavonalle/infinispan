@@ -2,7 +2,9 @@ package org.infinispan.commons.dataconversion;
 
 /**
  * @since 9.2
+ * @deprecated since 12.0, to be removed in 15.0
  */
+@Deprecated
 public interface EncoderIds {
    short NO_ENCODER = 0;
    short IDENTITY = 1;

@@ -114,6 +114,10 @@ public final class DataConversion {
       return new DataConversion(this.encoderClass, this.wrapperClass, requestMediaType, this.isKey);
    }
 
+   /**
+    * @deprecated Since 12.0, to be removed in 15.0 with no replacement.
+    */
+   @Deprecated
    public DataConversion withEncoding(Class<? extends Encoder> encoderClass) {
       if (Objects.equals(this.encoderClass, encoderClass)) return this;
       return new DataConversion(encoderClass, this.wrapperClass, this.requestMediaType, this.isKey);
