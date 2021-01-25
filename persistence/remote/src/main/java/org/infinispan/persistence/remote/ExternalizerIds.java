@@ -10,6 +10,6 @@ public interface ExternalizerIds {
 
    Integer MIGRATION_TASK = 1900;
    Integer REMOVED_FILTER = 1901;
-   Integer DISCONNECT_REMOTE_STORE = 1902;
-
+   Integer ENTRY_WRITER = 1902;
+   Integer DISCONNECT_REMOTE_STORE = 1903;
 }
