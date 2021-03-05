@@ -13,7 +13,7 @@
    <description>Infinispan Query module</description>
 
    <properties>
-      <infinispan.test.parallel.threads>5</infinispan.test.parallel.threads>
+      <infinispan.test.parallel.threads>1</infinispan.test.parallel.threads>
    </properties>
 
    <dependencies>

@@ -12,7 +12,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
@@ -25,7 +27,12 @@ import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commands.statetransfer.StateResponseCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.container.DataContainer;
 import org.infinispan.context.Flag;
+import org.infinispan.functional.FunctionalTestUtils;
+import org.infinispan.query.Search;
+import org.infinispan.query.core.stats.IndexInfo;
+import org.infinispan.query.core.stats.IndexStatistics;
 import org.infinispan.query.helper.SearchConfig;
 import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.query.test.AnotherGrassEater;
@@ -88,7 +95,6 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
       test(c -> c.replace(KEY, FLUFFY), this::assertFluffyIndexed);
    }
 
-   @Test(enabled = false, description = "ISPN-11299")
    public void testRemove() {
       test(c -> c.remove(KEY), sm -> {
       });
@@ -134,6 +140,8 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
       // to prevent the case when index becomes empty (and we mistake it for correctly removed item) we add another person
       cache0.put("k2", DAN);
 
+      waitForIndexSynced();
+
       StaticTestingErrorHandler.assertAllGood(cache0, cache1);
 
       List<Person> found = queryAll(cache0, Person.class);
@@ -145,6 +153,8 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
 
       // wait until the node discards old entries
       eventuallyEquals(null, () -> cache0.getAdvancedCache().getDataContainer().peek(KEY));
+
+      waitForIndexSynced();
 
       // block state response commands
       AtomicReference<Throwable> exception = new AtomicReference<>();
@@ -183,8 +193,12 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
       // overwrite the entry with another type
       op.accept(cache0);
 
+      waitForIndexSynced();
+
       // unblock state transfer
       allowStateResponse.complete(null);
+
+      waitForIndexSynced();
 
       // wait for the new node to be added
       try {
@@ -193,6 +207,8 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
          throw new RuntimeException(e);
       }
       assertNull(exception.get());
+
+      waitForIndexSynced();
 
       // check results
       StaticTestingErrorHandler.assertAllGood(cache0, cache(1));
@@ -210,7 +226,27 @@ public class IndexingDuringStateTransferTest extends MultipleCacheManagersTest {
       return people;
    }
 
-   private void assertFluffyIndexed(Cache<Object,Object> cache) {
+   private void assertFluffyIndexed(Cache<Object, Object> cache) {
       assertEquals(Collections.singletonList(FLUFFY), queryAll(cache, AnotherGrassEater.class));
+   }
+
+   private void waitForIndexSynced() {
+      List<Cache<String, Object>> caches = caches();
+      caches.forEach(c -> {
+         DataContainer<String, Object> dataContainer = c.getAdvancedCache().getDataContainer();
+         Map<Class<?>, Integer> countPerEntity = new HashMap<>();
+         dataContainer.forEach(e -> {
+            Class<?> entity = e.getValue().getClass();
+            countPerEntity.merge(entity, 1, Integer::sum);
+         });
+         countPerEntity.forEach((entity, count) -> {
+            eventually(() -> {
+               IndexStatistics indexStatistics = Search.getSearchStatistics(c).getIndexStatistics();
+               Map<String, IndexInfo> entityInfos = FunctionalTestUtils.await(indexStatistics.computeIndexInfos());
+               long indexedCount = entityInfos.get(entity.getName()).count();
+               return indexedCount == count;
+            });
+         });
+      });
    }
 }

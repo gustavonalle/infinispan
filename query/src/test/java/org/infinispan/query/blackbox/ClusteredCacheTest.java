@@ -68,8 +68,8 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
    public Object[] factory() {
       return new Object[]{
-            new ClusteredCacheTest().storageType(StorageType.OFF_HEAP),
-            new ClusteredCacheTest().storageType(StorageType.BINARY),
+//            new ClusteredCacheTest().storageType(StorageType.OFF_HEAP),
+//            new ClusteredCacheTest().storageType(StorageType.BINARY),
             new ClusteredCacheTest().storageType(StorageType.OBJECT),
       };
    }
